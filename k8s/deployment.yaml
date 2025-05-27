@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ht-sb-backend
+  namespace: ht-sb
+  labels:
+    app: ht-sb-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ht-sb-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: ht-sb-backend
+    spec:
+      containers:
+      - name: backend
+        image: ghcr.io/htandsb-hackathon/prod/ht-sb-backend:latest
+        imagePullPolicy: Always
+        command: ["sh", "-c"]
+        args:
+          - |
+            alembic upgrade head && \
+            uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2 --timeout-keep-alive 60 --log-level info
+        env:
+        - name: ALLOWED_ORIGINS
+          value: "https://163.44.125.128"
+        - name: OPENAPI_URL
+          value: "/api-ht-sb"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: POSTGRES_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_SERVER
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_DB
+        - name: GITHUB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: GITHUB_CLIENT_ID
+        - name: GITHUB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: GITHUB_CLIENT_SECRET
+        - name: FRONTEND_REDIRECT_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: FRONTEND_REDIRECT_URL
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: REDIS_HOST        
+        - name: POSTGRES_PORT
+          value: "5432"
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /api/v1/healthcheck/liveness
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/healthcheck/readiness
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 10
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: ht-sb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        ports:
+        - containerPort: 6379
+          name: redis
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
