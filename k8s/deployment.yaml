@@ -36,6 +36,11 @@ spec:
           value: "/api-ht-sb"
         - name: ENVIRONMENT
           value: "production"
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: SECRET_KEY
         - name: POSTGRES_SERVER
           valueFrom:
             secretKeyRef:
@@ -78,6 +83,16 @@ spec:
               key: REDIS_HOST        
         - name: POSTGRES_PORT
           value: "5432"
+        - name: TASUKI_API_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: TASUKI_API_URL
+        - name: TASUKI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: TASUKI_API_KEY
         ports:
         - containerPort: 8000
           name: http
