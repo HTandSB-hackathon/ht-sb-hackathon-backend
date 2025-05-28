@@ -12,13 +12,13 @@ if os.getenv("OPENAPI_URL"):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
-    openapi_url=openapi_url+"/openapi.json" if os.getenv("OPENAPI_URL") else "/openapi.json",
+    openapi_url=settings.OPENAPI_URL+"/openapi.json",
 )
 
 origins = []
 
-if os.getenv("ALLOWED_ORIGINS"):
-    origins.extend(os.getenv("ALLOWED_ORIGINS").split(","))
+if settings.ALLOWED_ORIGINS:
+    origins.extend(settings.ALLOWED_ORIGINS.split(","))
 
 app.add_middleware(
     CORSMiddleware,
