@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     
     # 環境設定
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    OPENAPI_URL: Optional[str] = os.getenv("OPENAPI_URL", "")
+    ALLOWED_ORIGINS: Optional[str] = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 
     # JWT認証
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-for-development")
@@ -38,6 +40,10 @@ class Settings(BaseSettings):
     
     # SQLAlchemy
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
+
+    # TASUKI
+    TASUKI_API_URL: str = os.getenv("TASUKI_API_URL", "https://api.tasuki.io/api/v1")
+    TASUKI_API_KEY: str = os.getenv("TASUKI_API_KEY")
     
     def __init__(self, **data: Any):
         super().__init__(**data)
