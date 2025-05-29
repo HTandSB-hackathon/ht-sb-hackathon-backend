@@ -37,6 +37,13 @@ class Settings(BaseSettings):
     # Redis設定
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
+
+    # S3/MinIO設定
+    S3_ENDPOINT_URL: Optional[str] = os.getenv("S3_ENDPOINT_URL")  # MinIO用、AWS S3の場合はNone
+    AWS_ACCESS_KEY_ID: str = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")
+    AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin")
+    S3_REGION: str = os.getenv("S3_REGION", "us-east-1")
+    STORAGE_BUCKET_NAME: str = os.getenv("STORAGE_BUCKET_NAME", "ht-sb-bucket")
     
     # SQLAlchemy
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
