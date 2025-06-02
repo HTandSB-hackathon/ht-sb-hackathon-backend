@@ -45,16 +45,6 @@ class MunicipalityBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=50, description="市区町村名")
     kana: Optional[str] = Field(None, max_length=50, description="フリガナ")
 
-    @validator('kana')
-    def validate_kana(cls, v):
-        """フリガナのバリデーション"""
-        if v:
-            # カタカナ文字セット（基本的なもの）
-            katakana_chars = set('アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンァィゥェォャュョッー')
-            if not all(c in katakana_chars for c in v):
-                raise ValueError('フリガナはカタカナで入力してください')
-        return v
-
 class MunicipalityCreate(MunicipalityBase):
     """市区町村作成用スキーマ"""
     pass
@@ -64,15 +54,6 @@ class MunicipalityUpdate(BaseModel):
     prefecture_id: Optional[int] = Field(None, description="都道府県ID")
     name: Optional[str] = Field(None, min_length=1, max_length=50, description="市区町村名")
     kana: Optional[str] = Field(None, max_length=50, description="フリガナ")
-
-    @validator('kana')
-    def validate_kana(cls, v):
-        """フリガナのバリデーション"""
-        if v:
-            katakana_chars = set('アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンァィゥェォャュョッー')
-            if not all(c in katakana_chars for c in v):
-                raise ValueError('フリガナはカタカナで入力してください')
-        return v
 
 class MunicipalityResponse(MunicipalityBase):
     """市区町村レスポンス用スキーマ"""
