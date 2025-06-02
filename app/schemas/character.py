@@ -20,7 +20,7 @@ class CharacterBase(BaseModel):
     unlock_condition: Optional[str] = Field("このキャラクターは現在取得できません", description="キャラクターのアンロック条件")
     prefecture_id: Optional[int] = Field(None, description="都道府県ID")
     municipality_id: Optional[int] = Field(None, description="市区町村ID")
-    tasuki_project_id: Optional[int] = Field(None, description="TASUKIプロジェクトID")
+    tasuki_project_id: Optional[str] = Field(None, description="TASUKIプロジェクトID")
 
     @validator('profile_image_url')
     def validate_profile_image_url(cls, v):

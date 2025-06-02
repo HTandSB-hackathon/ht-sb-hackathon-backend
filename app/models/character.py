@@ -22,7 +22,7 @@ class Character(Base):
     unlock_condition = Column(Text, nullable=True, default="このキャラクターは現在取得できません")  # Unlock condition for the character
     prefecture_id = Column(Integer, ForeignKey("prefectures.id"))
     municipality_id = Column(Integer, ForeignKey("municipalities.id"))
-    tasuki_project_id = Column(Integer)
+    tasuki_project_id = Column(String(50), nullable=True, default=None)  # TASUKI project ID for the character
     created_date = Column(DateTime(timezone=True), server_default=func.now())
     updated_date = Column(DateTime(timezone=True), onupdate=func.now())
     
