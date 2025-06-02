@@ -101,43 +101,41 @@ INSERT INTO characters (
     created_date,
     updated_date
 ) VALUES (
-    '佐藤 花子',
-    'サトウ ハナコ',
-    28,
-    1, -- 1: 女性 (based on schema: 0: 男性, 1: 女性, 2: その他)
-    (SELECT id FROM occupations WHERE name = '農業' LIMIT 1), -- occupation_id for 農業
-    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=800&h=400&fit=crop',
-    '須賀川でキュウリとお米を作っています。毎日畑で汗を流していますが、それが私の生きがいです。新鮮な野菜の美味しさを、もっと多くの人に知ってもらいたいです。',
-    ARRAY['優しい', '世話好き', '明るい', '頑張り屋']::text[], -- personality array
-    ARRAY['家庭菜園', '料理', '手芸', '散歩']::text[], -- hobbies array
-    ARRAY['きゅうりの漬物', 'おふくろの味', '野菜作り']::text[], -- specialties array
-    true, -- is_active
-    (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1), -- prefecture_id
-    (SELECT id FROM municipalities WHERE name = '須賀川市' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1), -- municipality_id
-    1001, -- tasuki_project_id (assuming a project ID)
-    "このキャラクターは現在取得できません",
-    NOW(), -- created_date
-    NOW() -- updated_date
+    'ちえこ',
+    78,
+    1, -- 女性
+    (SELECT id FROM occupations WHERE name = '自営業' LIMIT 1),
+    'https://media.discordapp.net/attachments/1377962362971361443/1378394857646587954/ChatGPT_Image_2025531_21_05_27.png?ex=683dc33f&is=683c71bf&hm=16e8f3580724ead84887d3a9b577d9cc29bd8a4d4126c1c8c4e74850a29c4b86&=&format=webp&quality=lossless&width=683&height=683',
+    'https://media.discordapp.net/attachments/1377962362971361443/1378394857646587954/ChatGPT_Image_2025531_21_05_27.png?ex=683dc33f&is=683c71bf&hm=16e8f3580724ead84887d3a9b577d9cc29bd8a4d4126c1c8c4e74850a29c4b86&=&format=webp&quality=lossless&width=683&height=683',
+    '飯舘村で「気まぐれ茶屋ちえこ」という農家レストランを運営',
+    ARRAY['温厚', '面倒見が良い', '話し上手']::text[],
+    ARRAY['料理', '園芸']::text[],
+    ARRAY['飯館村の歴史', '人生相談']::text[],
+    true,
+    (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1),
+    (SELECT id FROM municipalities WHERE name = '飯舘村' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1),
+    "bfb33a20-e896-4006-8505-e0776c3563ba", -- tasuki_project_id
+    '「気まぐれ茶屋ちえこ」で食事をすると解放',
+    NOW(),
+    NOW()
 ),(
-    '鈴木 美月',
-    'スズキ ミツキ',
-    35,
-    1, -- 1: 女性 (based on schema: 0: 男性, 1: 女性, 2: その他)
-    (SELECT id FROM occupations WHERE name = '農業' LIMIT 1), -- occupation_id for 農業
-    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=800&h=400&fit=crop',
-    '須賀川でキュウリとお米を作っています。毎日畑で汗を流していますが、それが私の生きがいです。新鮮な野菜の美味しさを、もっと多くの人に知ってもらいたいです。',
-    ARRAY['優しい', '頑張り屋']::text[], -- personality array
-    ARRAY['家庭菜園', '散歩']::text[], -- hobbies array
-    ARRAY['だいこんの漬物', 'おふくろの味', '野菜作り']::text[], -- specialties array
-    true, -- is_active
-    (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1), -- prefecture_id
-    (SELECT id FROM municipalities WHERE name = '中島村' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1), -- municipality_id
-    1002, -- tasuki_project_id (assuming a project ID)
-    "このキャラクターは現在取得できません",
-    NOW(), -- created_date
-    NOW() -- updated_date
+    'しゅうへい',
+    82,
+    0, -- 男性
+    (SELECT id FROM occupations WHERE name = '農家' LIMIT 1),
+    'https://media.discordapp.net/attachments/1377962362971361443/1378426878058041364/ChatGPT_Image_202561_01_42_08.png?ex=683de111&is=683c8f91&hm=315e431eabe050413684f0de4d4f15da4afc8e22335ffc8563b1205113ba4d40&=&format=webp&quality=lossless&width=575&height=863',
+    'https://media.discordapp.net/attachments/1377962362971361443/1378426878058041364/ChatGPT_Image_202561_01_42_08.png?ex=683de111&is=683c8f91&hm=315e431eabe050413684f0de4d4f15da4afc8e22335ffc8563b1205113ba4d40&=&format=webp&quality=lossless&width=575&height=863',
+    '郡山で長年看護師として地域医療に貢献してきたおばあちゃん。退職後もボランティアで健康相談に乗ったり、編み物教室を開いたりしている。',
+    ARRAY['優しい', '親切', '頼りになる', '明るい']::text[],
+    ARRAY['園芸', 'ガーデニング', '健康相談']::text[],
+    ARRAY['方言']::text[],
+    true,
+    (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1),
+    (SELECT id FROM municipalities WHERE name = '会津若松市' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1),
+    "1062624a-6f00-462e-b317-1186a9eb87f6", -- tasuki_project_id
+    '会津若松市の棚田で自撮り撮影した写真をSNSでタグ付きでアップロードすると解放',
+    NOW(),
+    NOW()
 );
 
 INSERT INTO stories (

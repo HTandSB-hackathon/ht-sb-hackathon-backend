@@ -17,6 +17,15 @@ def get_all_characters(db: Session) -> List[CharacterResponse]:
         return []
     return [CharacterResponse.from_orm(character) for character in characters]
 
+def get_character_by_id(db: Session, character_id: int) -> CharacterResponse:
+    """
+    指定したIDのキャラクター情報を取得
+    """
+    character = db.query(Character).filter(Character.id == character_id).first()
+    if not character:
+        return None
+    return CharacterResponse.from_orm(character)
+
 # relationshipsのuser_idを指定してキャラクター情報を取得
 def get_characters_by_user_id(db: Session, user_id: int) -> List[CharacterResponse]:
     """
