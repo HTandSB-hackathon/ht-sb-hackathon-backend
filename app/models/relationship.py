@@ -32,3 +32,15 @@ class Relationship(Base):
     # user = relationship("Users", back_populates="relationships")
     # character = relationship("Character", back_populates="relationships")
     # trust_level = relationship("TrustLevel", back_populates="relationships")
+
+class LevelThreshold(Base):
+    __tablename__ = "level_thresholds"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    character_id = Column(Integer, ForeignKey("characters.id"), nullable=False)
+    trust_level_id = Column(Integer, ForeignKey("trust_levels.id"), nullable=False)
+    required_points = Column(Integer, default=0)
+    required_conversations = Column(Integer, default=0)
+    required_days_from_first = Column(Integer, default=0)
+    created_date = Column(DateTime(timezone=True), server_default=func.now())
+    updated_date = Column(DateTime(timezone=True), onupdate=func.now())
