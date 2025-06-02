@@ -5,7 +5,7 @@ from app.db.base_class import Base # noqa
 from app.models.user import Users # noqa
 
 # Characterモデルをインポート
-from app.models.character import Character # noqa
+from app.models.character import Character, Story # noqa
 
 # Prefectureモデルをインポート
 from app.models.city import Prefecture, Municipality # noqa

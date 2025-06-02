@@ -97,6 +97,7 @@ INSERT INTO characters (
     prefecture_id,
     municipality_id,
     tasuki_project_id,
+    unlocked_condition,
     created_date,
     updated_date
 ) VALUES (
@@ -115,6 +116,49 @@ INSERT INTO characters (
     (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1), -- prefecture_id
     (SELECT id FROM municipalities WHERE name = '須賀川市' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1), -- municipality_id
     1001, -- tasuki_project_id (assuming a project ID)
+    "このキャラクターは現在取得できません",
     NOW(), -- created_date
     NOW() -- updated_date
+),(
+    '鈴木 美月',
+    'スズキ ミツキ',
+    35,
+    1, -- 1: 女性 (based on schema: 0: 男性, 1: 女性, 2: その他)
+    (SELECT id FROM occupations WHERE name = '農業' LIMIT 1), -- occupation_id for 農業
+    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=800&h=400&fit=crop',
+    '須賀川でキュウリとお米を作っています。毎日畑で汗を流していますが、それが私の生きがいです。新鮮な野菜の美味しさを、もっと多くの人に知ってもらいたいです。',
+    ARRAY['優しい', '頑張り屋']::text[], -- personality array
+    ARRAY['家庭菜園', '散歩']::text[], -- hobbies array
+    ARRAY['だいこんの漬物', 'おふくろの味', '野菜作り']::text[], -- specialties array
+    true, -- is_active
+    (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1), -- prefecture_id
+    (SELECT id FROM municipalities WHERE name = '中島村' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1), -- municipality_id
+    1002, -- tasuki_project_id (assuming a project ID)
+    "このキャラクターは現在取得できません",
+    NOW(), -- created_date
+    NOW() -- updated_date
+);
+
+INSERT INTO stories (
+    character_id,
+    required_trust_level,
+    title,
+    content,
+    created_date,
+    updated_date
+) VALUES (
+    (SELECT id FROM characters WHERE name = '佐藤 花子' LIMIT 1),
+    1,
+    '畑での一日',
+    '毎朝、日の出とともに畑に出かけます。土の香りと新鮮な空気が大好きです。今日はキュウリの収穫をしました。大きく育ったキュウリを見ると、達成感でいっぱいになります。',
+    NOW(),
+    NOW()
+),(
+    (SELECT id FROM characters WHERE name = '鈴木 美月' LIMIT 1),
+    1,
+    '新しい野菜の挑戦',
+    '今年は新しい品種の野菜に挑戦しています。特に珍しいトマトを育てているのですが、色とりどりの実がなってきて、とても楽しみです。収穫が待ち遠しいです。',
+    NOW(),
+    NOW()
 );
