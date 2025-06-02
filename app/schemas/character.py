@@ -17,6 +17,7 @@ class CharacterBase(BaseModel):
     specialties: List[str] = Field(default_factory=list, description="特技のリスト")
     is_active: bool = Field(True, description="アクティブフラグ")
     introduction: Optional[str] = Field(None, description="自己紹介文")
+    unlock_condition: Optional[str] = Field("このキャラクターは現在取得できません", description="キャラクターのアンロック条件")
     prefecture_id: Optional[int] = Field(None, description="都道府県ID")
     municipality_id: Optional[int] = Field(None, description="市区町村ID")
     tasuki_project_id: Optional[int] = Field(None, description="TASUKIプロジェクトID")
@@ -54,6 +55,17 @@ class CharacterResponse(CharacterBase):
     id: int = Field(..., description="キャラクターID")
     created_date: datetime = Field(..., description="作成日時")
     updated_date: Optional[datetime] = Field(None, description="更新日時")
+    is_locked: bool = False
+
+    class Config:
+        from_attributes = True
+
+class CharacterLockedResponse(CharacterBase):
+    """キャラクター レスポンス用スキーマ"""
+    id: int = Field(..., description="キャラクターID")
+    created_date: datetime = Field(..., description="作成日時")
+    updated_date: Optional[datetime] = Field(None, description="更新日時")
+    is_locked: bool = True
 
     class Config:
         from_attributes = True
@@ -82,3 +94,30 @@ class CharacterSearchParams(BaseModel):
             if v < values['age_min']:
                 raise ValueError('年齢の最大値は最小値以上である必要があります')
         return v
+    
+
+class StoryBase(BaseModel):
+    """ストーリーの基本スキーマ"""
+    character_id: int = Field(..., description="キャラクターID")
+    required_trust_level: int = Field(0, ge=0, description="必要な信頼レベル")
+    title: str = Field(..., min_length=1, max_length=100, description="ストーリータイトル")
+    content: str = Field(..., min_length=1, description="ストーリー内容")
+
+class StoryCreate(StoryBase):
+    """ストーリー作成用スキーマ"""
+    pass
+
+class StoryUpdate(BaseModel):
+    """ストーリー更新用スキーマ"""
+    title: Optional[str] = Field(None, min_length=1, max_length=100, description="ストーリータイトル")
+    content: Optional[str] = Field(None, min_length=1, description="ストーリー内容")
+    required_trust_level: Optional[int] = Field(None, ge=0, description="必要な信頼レベル")
+
+class StoryResponse(StoryBase):
+    """ストーリー レスポンス用スキーマ"""
+    id: int = Field(..., description="ストーリーID")
+    created_date: datetime = Field(..., description="作成日時")
+    updated_date: Optional[datetime] = Field(None, description="更新日時")
+
+    class Config:
+        from_attributes = True

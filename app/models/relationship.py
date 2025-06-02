@@ -1,5 +1,4 @@
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db.base_class import Base
@@ -14,7 +13,7 @@ class TrustLevel(Base):
     updated_date = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    relationships = relationship("Relationship", back_populates="trust_level")
+    # relationships = relationship("Relationship", back_populates="trust_level")
 
 class Relationship(Base):
     __tablename__ = "relationships"
@@ -30,6 +29,6 @@ class Relationship(Base):
     updated_date = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    user = relationship("User", back_populates="relationships")
-    character = relationship("Character", back_populates="relationships")
-    trust_level = relationship("TrustLevel", back_populates="relationships")
+    # user = relationship("Users", back_populates="relationships")
+    # character = relationship("Character", back_populates="relationships")
+    # trust_level = relationship("TrustLevel", back_populates="relationships")
