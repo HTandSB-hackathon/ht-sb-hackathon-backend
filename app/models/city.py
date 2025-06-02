@@ -15,7 +15,7 @@ class Prefecture(Base):
     
     # Relationships
     municipalities = relationship("Municipality", back_populates="prefecture")
-    characters = relationship("Character", back_populates="prefecture")
+    # characters = relationship("Character", back_populates="prefecture")
 
 class Municipality(Base):
     __tablename__ = "municipalities"
@@ -29,4 +29,4 @@ class Municipality(Base):
     
     # Relationships
     prefecture = relationship("Prefecture", back_populates="municipalities")
-    characters = relationship("Character", back_populates="municipality")
+    # characters = relationship("Character", back_populates="municipality")

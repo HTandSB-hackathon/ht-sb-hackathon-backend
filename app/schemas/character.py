@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -10,6 +10,11 @@ class CharacterBase(BaseModel):
     age: Optional[int] = Field(None, ge=0, le=150, description="年齢")
     occupation_id: Optional[int] = Field(None, description="職業ID")
     profile_image_url: Optional[str] = Field(None, max_length=500, description="プロフィール画像URL")
+    cover_image_url: Optional[str] = Field(None, max_length=500, description="カバー画像URL")
+    gender: int = Field(..., ge=0, le=2, description="性別 (0: 男性, 1: 女性, 2: その他)")
+    personality: List[str] = Field(default_factory=list, description="性格特性のリスト")
+    hobbies: List[str] = Field(default_factory=list, description="趣味のリスト")
+    specialties: List[str] = Field(default_factory=list, description="特技のリスト")
     is_active: bool = Field(True, description="アクティブフラグ")
     introduction: Optional[str] = Field(None, description="自己紹介文")
     prefecture_id: Optional[int] = Field(None, description="都道府県ID")

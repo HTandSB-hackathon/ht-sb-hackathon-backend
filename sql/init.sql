@@ -16,7 +16,7 @@ INSERT INTO occupations (name) VALUES
 
 -- 信頼レベルの初期データ
 INSERT INTO trust_levels (name) VALUES 
-('知らない人'), ('顔見知り'), ('友人'), ('親友'), ('家族同然');
+('初対面'), ('顔見知り'), ('友人'), ('親友'), ('家族同然');
 
 -- 市区町村の初期データ（福島県）
 INSERT INTO municipalities (prefecture_id, name, kana) VALUES
@@ -79,3 +79,42 @@ INSERT INTO municipalities (prefecture_id, name, kana) VALUES
 (7, '葛尾村', 'カツラオムラ'),
 (7, '新地町', 'シンチマチ'),
 (7, '飯舘村', 'イイタテムラ');
+
+
+INSERT INTO characters (
+    name,
+    name_kana,
+    age,
+    gender,
+    occupation_id,
+    profile_image_url,
+    cover_image_url,
+    introduction,
+    personality,
+    hobbies,
+    specialties,
+    is_active,
+    prefecture_id,
+    municipality_id,
+    tasuki_project_id,
+    created_date,
+    updated_date
+) VALUES (
+    '佐藤 花子',
+    'サトウ ハナコ',
+    28,
+    1, -- 1: 女性 (based on schema: 0: 男性, 1: 女性, 2: その他)
+    (SELECT id FROM occupations WHERE name = '農業' LIMIT 1), -- occupation_id for 農業
+    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=800&h=400&fit=crop',
+    '須賀川でキュウリとお米を作っています。毎日畑で汗を流していますが、それが私の生きがいです。新鮮な野菜の美味しさを、もっと多くの人に知ってもらいたいです。',
+    ARRAY['優しい', '世話好き', '明るい', '頑張り屋']::text[], -- personality array
+    ARRAY['家庭菜園', '料理', '手芸', '散歩']::text[], -- hobbies array
+    ARRAY['きゅうりの漬物', 'おふくろの味', '野菜作り']::text[], -- specialties array
+    true, -- is_active
+    (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1), -- prefecture_id
+    (SELECT id FROM municipalities WHERE name = '須賀川市' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1), -- municipality_id
+    1001, -- tasuki_project_id (assuming a project ID)
+    NOW(), -- created_date
+    NOW() -- updated_date
+);
