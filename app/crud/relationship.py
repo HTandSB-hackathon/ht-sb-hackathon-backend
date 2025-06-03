@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.relationship import LevelThreshold, Relationship
-from app.schemas.relationship import LevelThresholdResponse, RelationshipResponse
+from app.schemas.relationship import LevelThresholdResponse, RelationshipResponse, RelationshipUpdate
 
 
 def get_relationships_by_user_id_and_character_id(db: Session, user_id: int, character_id: int) -> RelationshipResponse:
@@ -72,6 +72,41 @@ def update_relationship_total_point(db: Session, user_id: int, character_id: int
         db_relationship.total_points = 0
 
     db_relationship.total_points += points_to_add
+    db.commit()
+    db.refresh(db_relationship)
+    return RelationshipResponse.from_orm(db_relationship)
+
+def update_relationship(
+    db: Session,
+    user_id: int,
+    character_id: int,
+    update_data: RelationshipUpdate
+) -> RelationshipResponse:
+    """
+    指定したユーザーIDとキャラクターIDに紐づく信頼関係を更新
+    引数に対象のカラムがあれば更新する。Noneの場合は更新しない。
+    """
+    db_relationship = db.query(Relationship).filter(
+        Relationship.user_id == user_id,
+        Relationship.character_id == character_id
+    ).first()
+
+    if not db_relationship:
+        return RelationshipResponse()
+    # 更新可能なフィールドを更新
+    if update_data.trust_level_id is not None:
+        db_relationship.trust_level_id = update_data.trust_level_id
+    if update_data.total_points is not None:
+        db_relationship.total_points = update_data.total_points
+    if update_data.conversation_count is not None:
+        db_relationship.conversation_count = update_data.conversation_count
+    if update_data.first_met_at is not None:
+        db_relationship.first_met_at = update_data.first_met_at
+    if update_data.is_favorite is not None:
+        db_relationship.is_favorite = update_data.is_favorite
+    # 更新日時を自動で更新
+    db_relationship.updated_date = db_relationship.updated_date
+
     db.commit()
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)
