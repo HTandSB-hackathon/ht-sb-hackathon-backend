@@ -28,3 +28,13 @@ class ChatOutput(BaseOutput):
     chunks: Optional[List[Dict]] = Field(
         default=None, description="chunksは、RAG が参照したチャンクの情報です。"
     )
+
+class ChatCount(BaseModel):
+    """Chat count model"""
+
+    character_id: int = Field(..., description="Character ID")
+    count: int = Field(..., ge=0, description="Number of chats with the character")
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
