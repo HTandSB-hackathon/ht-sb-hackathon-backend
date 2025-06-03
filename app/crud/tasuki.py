@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.llm.chain.chatchain import ChatChain
 from app.core.tasuki.tasuki_client import TasukiClient
-from app.schemas.chat import ChatMessage, ChatOutput
+from app.schemas.chat import ChatCount, ChatMessage, ChatOutput
 from app.schemas.tasuki import TasukiAuthCheckOutput
 
 logger = logging.getLogger(__name__)
@@ -147,3 +147,27 @@ async def get_all_chat_count(mongodb: AsyncIOMotorDatabase, user_id: str) -> int
     except Exception as e:
         logger.error(f"全チャットメッセージの取得に失敗しました: {e}")
         raise
+
+async def get_all_chat_count_by_character(
+    mongodb: AsyncIOMotorDatabase, user_id: str
+) -> ChatCount:
+    """
+    ユーザーの全てのキャラクターごとのチャットメッセージ数を取得するヘルパーメソッド
+    """
+    try:
+        collections = mongodb["chats"]
+        pipeline = [
+            {"$match": {"user_id": user_id}},
+            {"$group": {"_id": "$character_id", "count": {"$sum": 1}}},
+            {"$project": {"character_id": "$_id", "count": 1, "_id": 0}}
+        ]
+        results = await collections.aggregate(pipeline).to_list(length=None)
+
+        chat_counts = [ChatCount(character_id=result["character_id"], count=result["count"]) for result in results]
+        logger.info(f"全キャラクターのチャットメッセージ数を取得しました: user_id={user_id}, counts={chat_counts}")
+        return chat_counts
+
+    except Exception as e:
+        logger.error(f"全キャラクターのチャットメッセージ数の取得に失敗しました: {e}")
+        raise
+    
