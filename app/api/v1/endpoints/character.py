@@ -63,7 +63,33 @@ def read_all_relationships(
     )
     return relationships
 
+@router.post("/{character_id}/insert", response_model=RelationshipResponse)
+def create_relationship(
+    *,
+    db: Session = Depends(deps.get_db),
+    character_id: int,
+    current_user=Depends(deps.get_current_user)
+) -> RelationshipResponse:
+    """
+    指定したキャラクターのリレーションシップ情報を新規作成するエンドポイント
+    """
+    current_user_id = current_user.id if current_user else None
+    if current_user_id is None:
+        return None
 
+    # 既にリレーションシップが存在する場合は何もしない
+    existing_relationship = relationship_crud.get_relationships_by_user_id_and_character_id(
+        db, user_id=current_user_id, character_id=character_id
+    )
+    if existing_relationship:
+        return existing_relationship
+    
+    ## ここで実際はunlockedできるかどうかのチェックを行う
+
+    new_relationship = relationship_crud.insert_relationship(
+        db, user_id=current_user_id, character_id=character_id
+    )
+    return new_relationship
 
 @router.get("/{character_id}", response_model=RelationshipResponse)
 def read_relationship(

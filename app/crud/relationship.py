@@ -28,7 +28,7 @@ def get_relationships_by_user_id_and_character_id(db: Session, user_id: int, cha
     ).first()
     
     if not relationships:
-        return RelationshipResponse()
+        return None
     return RelationshipResponse.from_orm(relationships)
 
 def get_level_thresholds_by_character_id_and_trust_level_id(db: Session, character_id: int, trust_level_id: int) -> LevelThresholdResponse:
@@ -44,6 +44,30 @@ def get_level_thresholds_by_character_id_and_trust_level_id(db: Session, charact
     if not level_threshold:
         return LevelThresholdResponse()
     return LevelThresholdResponse.from_orm(level_threshold)
+
+def insert_relationship(
+    db: Session,
+    user_id: int,
+    character_id: int,
+) -> RelationshipResponse:
+    """
+    指定したユーザーIDとキャラクターIDに紐づく信頼関係を新規作成
+    信頼レベルはデフォルトで1、total_pointsは0、会話数は0、初対面日時は現在日時、is_favoriteはFalseとする
+    """
+    db_relationship = Relationship(
+        user_id=user_id,
+        character_id=character_id,
+        trust_level_id=1,  # デフォルトの信頼レベル
+        total_points=0,    # 初期ポイントは0
+        conversation_count=0,  # 初期会話数は0
+        first_met_at=None,  # 初対面日時はNone（後で設定可能）
+        is_favorite=False   # 初期状態ではお気に入りではない
+    )
+
+    db.add(db_relationship)
+    db.commit()
+    db.refresh(db_relationship)
+    return RelationshipResponse.from_orm(db_relationship)
 
 def update_relationship_trust_level(db: Session, user_id: int, character_id: int, new_trust_level_id: int) -> RelationshipResponse:
     """
