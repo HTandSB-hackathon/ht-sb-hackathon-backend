@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     # TASUKI
     TASUKI_API_URL: str = os.getenv("TASUKI_API_URL", "https://api.tasuki.io/api/v1")
     TASUKI_API_KEY: str = os.getenv("TASUKI_API_KEY")
+
+    # MongoDB設定
+    MONGODB_URL: Optional[str] = None
+    MONGODB_HOST: Optional[str] = os.getenv("MONGODB_HOST", "mongo")
+    MONGODB_USERNAME: Optional[str] = os.getenv("MONGODB_USERNAME", "mongdb")
+    MONGODB_PASSWORD: Optional[str] = os.getenv("MONGODB_PASSWORD", "mongdb")
+    MONGODB_DB_NAME: Optional[str] = os.getenv("MONGODB_DB_NAME", "ht-sb")
     
     def __init__(self, **data: Any):
         super().__init__(**data)
@@ -68,6 +75,8 @@ class Settings(BaseSettings):
                 f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
             )
             # または: self.SQLALCHEMY_DATABASE_URI = "sqlite:///./test.db"
+
+        self.MONGODB_URL = f"mongodb://{self.MONGODB_USERNAME}:{self.MONGODB_PASSWORD}@{self.MONGODB_HOST}:27017"
             
     class Config:
         case_sensitive = True
