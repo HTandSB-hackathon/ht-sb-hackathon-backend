@@ -1,8 +1,12 @@
 import logging
+from datetime import datetime
+from typing import Any
+
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.llm.chain.chatchain import ChatChain
 from app.core.tasuki.tasuki_client import TasukiClient
-from app.schemas.chat import ChatOutput
+from app.schemas.chat import ChatMessage, ChatOutput
 from app.schemas.tasuki import TasukiAuthCheckOutput
 
 logger = logging.getLogger(__name__)
@@ -36,18 +40,17 @@ class TasukiService:
             raise TasukiAuthCheckOutput(status_code="500", message=f"TASUKI認証チェックに失敗しました。APIキーの設定を確認してください。str{e}")
         
     
-    def chat(self, inputs, character) -> ChatOutput:
+    async def chat(self, inputs, character) -> ChatOutput:
         """
         TASUKIプロジェクトでチャットを実行するメソッド
         """
         try:
-            print(self.chain.get_prompt(inputs, character))
-            result =  self.chain.invoke(inputs, character)
-            return {
-                "response": result.content,
-                "role": result.response_metadata.get("role", "assistant"),
-                "chunks": result.response_metadata.get("chunks", []),
-            }
+            result = self.chain.invoke(inputs, character)
+            return ChatOutput(
+                response=result.content,
+                role=result.response_metadata.get("role", "assistant"),
+                chunks=result.response_metadata.get("chunks", []),
+            )
         except Exception as e:
             logger.error(f"TASUKIチャットに失敗しました: {e}")
             raise ChatOutput(
@@ -55,3 +58,64 @@ class TasukiService:
                 role="assistant",
                 chunks=[]
             )
+        
+
+async def get_chat_history(mongodb: AsyncIOMotorDatabase, user_id: str, character_id: str):
+    """
+    ユーザーの特定キャラクターとのチャット履歴を取得するヘルパーメソッド
+    MongoDB構造: users[collection] -> user_id[document] -> character_id[subcollection] -> chat_messages[documents]
+    """
+    try:
+        collections = mongodb["chats"]
+
+        # ユーザーのチャット履歴を取得
+        chat_history = await collections.find({"user_id": user_id, "character_id": character_id}).to_list(length=None)
+
+        if not chat_history:
+            logger.info(f"チャット履歴が見つかりません: user_id={user_id}, character_id={character_id}")
+            return []
+
+        # チャットメッセージをChatMessageモデルに変換
+        messages = [ChatMessage(**msg) for msg in chat_history]
+
+        logger.info(f"チャット履歴を取得しました: user_id={user_id}, character_id={character_id}, count={len(messages)}")
+        return messages
+
+    except Exception as e:
+        logger.error(f"チャット履歴の取得に失敗しました: {e}")
+        raise
+    
+async def save_chat_message(mongodb: AsyncIOMotorDatabase, user_id: str, character_id: str, role: str, content: str) -> Any:
+    """
+    チャットメッセージをMongoDB に保存するヘルパーメソッド
+    MongoDB構造: users[collection] -> user_id[document] -> characters[subcollection] -> messages[documents]
+    """
+    try:
+
+        collections = mongodb["chats"]
+        
+        chat_doc = {
+            "user_id": user_id,
+            "character_id": character_id,
+            "content": content,
+            "role": role,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        logger.info(f"チャットメッセージを保存します: user_id={user_id}, character_id={character_id}, content={content}")
+
+        # ユーザーのチャットメッセージを保存
+        result = await collections.insert_one(chat_doc)
+        
+        logger.info(f"チャットメッセージを保存しました: user_id={user_id}, character_id={character_id}, message_id={result.inserted_id}")
+        return result.inserted_id
+    except Exception as e:
+        logger.error(f"チャットメッセージの保存に失敗しました: {e}")
+        raise
+
+async def check_connection(mongodb: AsyncIOMotorDatabase):
+    try:
+        await mongodb.command("ping")
+        print("✅ MongoDB に正常接続されています")
+    except Exception as e:
+        print(f"❌ 接続エラー: {e}")

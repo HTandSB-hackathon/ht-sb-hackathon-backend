@@ -3,6 +3,7 @@ from typing import Generator
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,19 @@ def get_db() -> Generator:
         yield db
     finally:
         db.close()
+
+## MONGODBの依存関係はここでは定義
+def get_mongo_db() -> Generator:
+    """
+    MongoDBセッションの依存関係
+    """
+    try:
+        client = AsyncIOMotorClient(settings.MONGODB_URL)
+        mongodb = client[settings.MONGODB_DB_NAME]
+        yield mongodb
+    finally:
+        client.close()
+
 
 
 def get_current_user(
