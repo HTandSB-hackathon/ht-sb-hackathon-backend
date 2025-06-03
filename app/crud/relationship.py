@@ -1,10 +1,8 @@
 
 from sqlalchemy.orm import Session
 
-from app.models.relationship import Relationship
-from app.schemas.relationship import RelationshipResponse
-from app.models.relationship import LevelThreshold
-from app.schemas.relationship import LevelThresholdResponse
+from app.models.relationship import LevelThreshold, Relationship
+from app.schemas.relationship import LevelThresholdResponse, RelationshipResponse
 
 
 def get_relationships_by_user_id_and_character_id(db: Session, user_id: int, character_id: int) -> RelationshipResponse:

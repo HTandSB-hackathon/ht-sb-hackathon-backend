@@ -1,5 +1,5 @@
-from typing import List, Optional
 from datetime import datetime, timezone
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.crud import character as crud
 from app.crud import relationship as relationship_crud
-from app.models.relationship import Relationship as RelationshipModel, LevelThreshold as LevelThresholdModel
+from app.models.relationship import LevelThreshold as LevelThresholdModel
+from app.models.relationship import Relationship as RelationshipModel
 from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryResponse
-from app.schemas.relationship import RelationshipResponse, LevelThresholdResponse
+from app.schemas.relationship import RelationshipResponse
 
 router = APIRouter()
 
@@ -143,7 +144,8 @@ def check_trust_level(
 
     if target_trust_level_id > current_trust_level_id:
         updated_relationship_response = relationship_crud.update_relationship_trust_level(
-            db, user_id=current_user_id, character_id=character_id, new_trust_level_id=target_trust_level_id+1 # level_thresholdsにはtrust_levelからレベルアップするための条件が含まれているため更新する値は+1を指定
+            # level_thresholdsにはtrust_levelからレベルアップするための条件が含まれているため更新する値は+1を指定
+            db, user_id=current_user_id, character_id=character_id, new_trust_level_id=target_trust_level_id+1 
         )
         if not updated_relationship_response or not hasattr(updated_relationship_response, 'id'):
             return RelationshipResponse.from_orm(db_relationship) # 更新失敗時は元データを返す
