@@ -132,3 +132,21 @@ class RelationshipPointsUpdate(BaseModel):
         if v < 0:
             raise ValueError('追加ポイント数は0以上である必要があります')
         return v
+
+
+class LevelThresholdBase(BaseModel):
+    """レベル閾値の基本スキーマ"""
+    character_id: int = Field(..., description="キャラクターID")
+    trust_level_id: int = Field(..., description="信頼レベルID")
+    required_points: Optional[int] = Field(default=0, ge=0, description="必要ポイント数")
+    required_conversations: Optional[int] = Field(default=0, ge=0, description="必要会話回数")
+    required_days_from_first: Optional[int] = Field(default=0, ge=0, description="初回出会いからの必要日数")
+
+class LevelThresholdResponse(LevelThresholdBase):
+    """レベル閾値レスポンス用スキーマ"""
+    id: int = Field(..., description="レベル閾値ID")
+    created_date: datetime = Field(..., description="作成日時")
+    updated_date: Optional[datetime] = Field(None, description="更新日時")
+
+    class Config:
+        from_attributes = True
