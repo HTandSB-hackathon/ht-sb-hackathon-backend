@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.sql import func
 
 from app.db.base_class import Base
@@ -24,6 +24,7 @@ class Relationship(Base):
     trust_level_id = Column(Integer, ForeignKey("trust_levels.id"), nullable=False)
     total_points = Column(Integer, default=0)
     conversation_count = Column(Integer, default=0)
+    is_favorite = Column(Boolean, default=False)
     first_met_at = Column(DateTime(timezone=True))
     created_date = Column(DateTime(timezone=True), server_default=func.now())
     updated_date = Column(DateTime(timezone=True), onupdate=func.now())

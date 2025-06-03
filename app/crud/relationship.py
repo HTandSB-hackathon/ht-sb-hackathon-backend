@@ -52,3 +52,26 @@ def update_relationship_trust_level(db: Session, user_id: int, character_id: int
     db.commit()
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)
+
+
+def update_relationship_total_point(db: Session, user_id: int, character_id: int, points_to_add: int) -> RelationshipResponse:
+    """
+    指定したユーザーIDとキャラクターIDに紐づく信頼関係のtotal_pointsにポイントを加算する
+    加算するポイントを引数とする（points_to_add）
+    points_to_addは正の値であることを想定
+    """
+    db_relationship = db.query(Relationship).filter(
+        Relationship.user_id == user_id,
+        Relationship.character_id == character_id
+    ).first()
+
+    if not db_relationship:
+        return RelationshipResponse()
+
+    if db_relationship.total_points is None:
+        db_relationship.total_points = 0
+
+    db_relationship.total_points += points_to_add
+    db.commit()
+    db.refresh(db_relationship)
+    return RelationshipResponse.from_orm(db_relationship)
