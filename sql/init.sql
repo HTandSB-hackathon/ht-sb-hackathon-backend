@@ -1,12 +1,12 @@
 -- 都道府県の初期データ
-INSERT INTO prefectures (name) VALUES 
-('北海道'), ('青森県'), ('岩手県'), ('宮城県'), ('秋田県'), ('山形県'), ('福島県'),
-('茨城県'), ('栃木県'), ('群馬県'), ('埼玉県'), ('千葉県'), ('東京都'), ('神奈川県'),
-('新潟県'), ('富山県'), ('石川県'), ('福井県'), ('山梨県'), ('長野県'), ('岐阜県'),
-('静岡県'), ('愛知県'), ('三重県'), ('滋賀県'), ('京都府'), ('大阪府'), ('兵庫県'),
-('奈良県'), ('和歌山県'), ('鳥取県'), ('島根県'), ('岡山県'), ('広島県'), ('山口県'),
-('徳島県'), ('香川県'), ('愛媛県'), ('高知県'), ('福岡県'), ('佐賀県'), ('長崎県'),
-('熊本県'), ('大分県'), ('宮崎県'), ('鹿児島県'), ('沖縄県');
+INSERT INTO prefectures (id, name) VALUES 
+(1, '北海道'), (2, '青森県'), (3, '岩手県'), (4, '宮城県'), (5, '秋田県'), (6, '山形県'), (7, '福島県'),
+(8, '茨城県'), (9, '栃木県'), (10, '群馬県'), (11, '埼玉県'), (12, '千葉県'), (13, '東京都'), (14, '神奈川県'),
+(15, '新潟県'), (16, '富山県'), (17, '石川県'), (18, '福井県'), (19, '山梨県'), (20, '長野県'), (21, '岐阜県'),
+(22, '静岡県'), (23, '愛知県'), (24, '三重県'), (25, '滋賀県'), (26, '京都府'), (27, '大阪府'), (28, '兵庫県'),
+(29, '奈良県'), (30, '和歌山県'), (31, '鳥取県'), (32, '島根県'), (33, '岡山県'), (34, '広島県'), (35, '山口県'),
+(36, '徳島県'), (37, '香川県'), (38, '愛媛県'), (39, '高知県'), (40, '福岡県'), (41, '佐賀県'), (42, '長崎県'),
+(43, '熊本県'), (44, '大分県'), (45, '宮崎県'), (46, '鹿児島県'), (47, '沖縄県');
 
 -- 職業の初期データ
 INSERT INTO occupations (name) VALUES 
@@ -83,7 +83,6 @@ INSERT INTO municipalities (prefecture_id, name, kana) VALUES
 
 INSERT INTO characters (
     name,
-    name_kana,
     age,
     gender,
     occupation_id,
@@ -97,7 +96,7 @@ INSERT INTO characters (
     prefecture_id,
     municipality_id,
     tasuki_project_id,
-    unlocked_condition,
+    unlock_condition,
     created_date,
     updated_date
 ) VALUES (
@@ -114,7 +113,7 @@ INSERT INTO characters (
     true,
     (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1),
     (SELECT id FROM municipalities WHERE name = '飯舘村' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1),
-    "bfb33a20-e896-4006-8505-e0776c3563ba", -- tasuki_project_id
+    'bfb33a20-e896-4006-8505-e0776c3563ba', -- tasuki_project_id
     '「気まぐれ茶屋ちえこ」で食事をすると解放',
     NOW(),
     NOW()
@@ -122,7 +121,7 @@ INSERT INTO characters (
     'しゅうへい',
     82,
     0, -- 男性
-    (SELECT id FROM occupations WHERE name = '農家' LIMIT 1),
+    (SELECT id FROM occupations WHERE name = '農業' LIMIT 1),
     'http://host.docker.internal:8000/api/v1/files/images/しゅうへい.png',
     'http://host.docker.internal:8000/api/v1/files/images/しゅうへい.png',
     '郡山で長年看護師として地域医療に貢献してきたおばあちゃん。退職後もボランティアで健康相談に乗ったり、編み物教室を開いたりしている。',
@@ -132,7 +131,7 @@ INSERT INTO characters (
     true,
     (SELECT id FROM prefectures WHERE name = '福島県' LIMIT 1),
     (SELECT id FROM municipalities WHERE name = '会津若松市' AND prefecture_id = (SELECT id FROM prefectures WHERE name = '福島県') LIMIT 1),
-    "1062624a-6f00-462e-b317-1186a9eb87f6", -- tasuki_project_id
+    '1062624a-6f00-462e-b317-1186a9eb87f6', -- tasuki_project_id
     '会津若松市の棚田で自撮り撮影した写真をSNSでタグ付きでアップロードすると解放',
     NOW(),
     NOW()
@@ -146,20 +145,19 @@ INSERT INTO stories (
     created_date,
     updated_date
 ) VALUES (
-    (SELECT id FROM characters WHERE name = '佐藤 花子' LIMIT 1),
+    (SELECT id FROM characters WHERE name = 'ちえこ' LIMIT 1),
     1,
     '畑での一日',
     '毎朝、日の出とともに畑に出かけます。土の香りと新鮮な空気が大好きです。今日はキュウリの収穫をしました。大きく育ったキュウリを見ると、達成感でいっぱいになります。',
     NOW(),
     NOW()
 ),(
-    (SELECT id FROM characters WHERE name = '鈴木 美月' LIMIT 1),
+    (SELECT id FROM characters WHERE name = 'しゅうへい' LIMIT 1),
     1,
     '新しい野菜の挑戦',
     '今年は新しい品種の野菜に挑戦しています。特に珍しいトマトを育てているのですが、色とりどりの実がなってきて、とても楽しみです。収穫が待ち遠しいです。',
     NOW(),
     NOW()
 );
-
 
 https://163.44.125.128/api-ht-sb/api/v1/files/images/ちえこ.png
