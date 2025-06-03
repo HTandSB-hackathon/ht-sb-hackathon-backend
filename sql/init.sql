@@ -160,4 +160,26 @@ INSERT INTO stories (
     NOW()
 );
 
+INSERT INTO relationships (
+    user_id,
+    character_id,
+    trust_level_id,
+    total_points,
+    conversation_count,
+    first_met_at,
+    created_date,
+    updated_date,
+    is_favorite
+) VALUES (
+    1,
+    (SELECT id FROM characters WHERE name = 'ちえこ' LIMIT 1),
+    (SELECT id FROM trust_levels WHERE name = '初対面' LIMIT 1),
+    10,
+    1,
+    NOW(),
+    NOW(),
+    NOW(),
+    true
+);
+
 https://163.44.125.128/api-ht-sb/api/v1/files/images/ちえこ.png
