@@ -62,6 +62,7 @@ class RelationshipUpdate(BaseModel):
     total_points: Optional[int] = Field(None, ge=0, description="総ポイント数")
     conversation_count: Optional[int] = Field(None, ge=0, description="会話回数")
     first_met_at: Optional[datetime] = Field(None, description="初回出会い日時")
+    is_favorite: Optional[bool] = Field(None, description="お気に入りフラグ")
 
     @validator('total_points')
     def validate_total_points(cls, v):

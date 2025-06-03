@@ -10,7 +10,7 @@ from app.crud import relationship as relationship_crud
 from app.models.relationship import LevelThreshold as LevelThresholdModel
 from app.models.relationship import Relationship as RelationshipModel
 from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryResponse
-from app.schemas.relationship import RelationshipResponse
+from app.schemas.relationship import RelationshipResponse, RelationshipUpdate
 
 router = APIRouter()
 
@@ -65,6 +65,29 @@ def read_relationship(
     if not relationship:
         return RelationshipResponse()
     return relationship
+
+@router.put("/{character_id}/put", response_model=RelationshipResponse)
+def update_relationship(
+    *,
+    db: Session = Depends(deps.get_db),
+    character_id: int,
+    current_user=Depends(deps.get_current_user),
+    inputs: RelationshipUpdate
+) -> RelationshipResponse:
+    """
+    指定したキャラクターのリレーションシップ情報を更新するエンドポイント
+    """
+    current_user_id = current_user.id if current_user else None
+    if current_user_id is None:
+        return RelationshipResponse()
+
+    updated_relationship = relationship_crud.update_relationship(
+        db, user_id=current_user_id, character_id=character_id, update_data=inputs
+    )
+    if not updated_relationship:
+        return RelationshipResponse()
+    return updated_relationship
+    
 
 # キャラクターのストーリーを取得するエンドポイント
 @router.get("/{character_id}/stories", response_model=List[StoryResponse])

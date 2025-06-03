@@ -119,3 +119,31 @@ async def check_connection(mongodb: AsyncIOMotorDatabase):
         print("✅ MongoDB に正常接続されています")
     except Exception as e:
         print(f"❌ 接続エラー: {e}")
+
+async def get_chat_count(mongodb: AsyncIOMotorDatabase, user_id: str, character_id: str) -> int:
+    """
+    ユーザーの特定キャラクターとのチャットメッセージ数を取得するヘルパーメソッド
+    """
+    try:
+        collections = mongodb["chats"]
+        count = await collections.count_documents({"user_id": user_id, "character_id": character_id})
+        logger.info(f"チャットメッセージ数を取得しました: user_id={user_id}, character_id={character_id}, count={count}")
+        return count
+    except Exception as e:
+        logger.error(f"チャットメッセージ数の取得に失敗しました: {e}")
+        raise
+
+async def get_all_chat_count(mongodb: AsyncIOMotorDatabase, user_id: str) -> int:
+    """
+    ユーザーの特定キャラクターとの全チャットメッセージを取得するヘルパーメソッド
+    """
+    try:
+        collections = mongodb["chats"]
+        count = await collections.count_documents({"user_id": user_id})
+        print(f"全チャットメッセージ数を取得しました: user_id={user_id}, count={count}")
+        logger.info(f"全チャットメッセージ数を取得しました: user_id={user_id}, count={count}")
+        return count
+
+    except Exception as e:
+        logger.error(f"全チャットメッセージの取得に失敗しました: {e}")
+        raise
