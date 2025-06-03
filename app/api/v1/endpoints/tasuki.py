@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.core.tasuki.tasuki_client import TasukiClient
 from app.crud.character import get_character_by_id
+from app.crud.relationship import update_relationship_total_point
 from app.crud.tasuki import TasukiService, get_all_chat_count, get_all_chat_count_by_character, get_chat_count, get_chat_history, save_chat_message
 from app.schemas.chat import ChatCount, ChatInput, ChatMessage, ChatOutput
 
@@ -103,6 +104,12 @@ async def tasuki_chat(
         )
 
         print(f"出力メッセージ保存結果: {output_result}")
+
+        updated_relationship = update_relationship_total_point(
+            db, user_id=current_user.id, character_id=character.id,
+            points_to_add=1
+        )
+        print(f"更新された信頼関係: {updated_relationship}")
 
         return output
     except Exception as e:
