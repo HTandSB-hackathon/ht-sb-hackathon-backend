@@ -163,6 +163,26 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: STORAGE_BUCKET_NAME
+        - name: MONGODB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: MONGODB_HOST
+        - name: MONGODB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: MONGODB_USERNAME
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: MONGODB_PASSWORD
+        - name: MONGODB_DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: MONGODB_DB_NAME
         ports:
         - containerPort: 8000
           name: http
