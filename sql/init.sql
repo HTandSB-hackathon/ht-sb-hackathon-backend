@@ -105,8 +105,8 @@ INSERT INTO characters (
     78,
     1, -- 女性
     (SELECT id FROM occupations WHERE name = '自営業' LIMIT 1),
-    'https://media.discordapp.net/attachments/1377962362971361443/1378394857646587954/ChatGPT_Image_2025531_21_05_27.png?ex=683dc33f&is=683c71bf&hm=16e8f3580724ead84887d3a9b577d9cc29bd8a4d4126c1c8c4e74850a29c4b86&=&format=webp&quality=lossless&width=683&height=683',
-    'https://media.discordapp.net/attachments/1377962362971361443/1378394857646587954/ChatGPT_Image_2025531_21_05_27.png?ex=683dc33f&is=683c71bf&hm=16e8f3580724ead84887d3a9b577d9cc29bd8a4d4126c1c8c4e74850a29c4b86&=&format=webp&quality=lossless&width=683&height=683',
+    'http://host.docker.internal:8000/api/v1/files/images/ちえこ.png',
+    'http://host.docker.internal:8000/api/v1/files/images/ちえこ.png',
     '飯舘村で「気まぐれ茶屋ちえこ」という農家レストランを運営',
     ARRAY['温厚', '面倒見が良い', '話し上手']::text[],
     ARRAY['料理', '園芸']::text[],
@@ -123,8 +123,8 @@ INSERT INTO characters (
     82,
     0, -- 男性
     (SELECT id FROM occupations WHERE name = '農家' LIMIT 1),
-    'https://media.discordapp.net/attachments/1377962362971361443/1378426878058041364/ChatGPT_Image_202561_01_42_08.png?ex=683de111&is=683c8f91&hm=315e431eabe050413684f0de4d4f15da4afc8e22335ffc8563b1205113ba4d40&=&format=webp&quality=lossless&width=575&height=863',
-    'https://media.discordapp.net/attachments/1377962362971361443/1378426878058041364/ChatGPT_Image_202561_01_42_08.png?ex=683de111&is=683c8f91&hm=315e431eabe050413684f0de4d4f15da4afc8e22335ffc8563b1205113ba4d40&=&format=webp&quality=lossless&width=575&height=863',
+    'http://host.docker.internal:8000/api/v1/files/images/しゅうへい.png',
+    'http://host.docker.internal:8000/api/v1/files/images/しゅうへい.png',
     '郡山で長年看護師として地域医療に貢献してきたおばあちゃん。退職後もボランティアで健康相談に乗ったり、編み物教室を開いたりしている。',
     ARRAY['優しい', '親切', '頼りになる', '明るい']::text[],
     ARRAY['園芸', 'ガーデニング', '健康相談']::text[],
@@ -160,3 +160,6 @@ INSERT INTO stories (
     NOW(),
     NOW()
 );
+
+
+https://163.44.125.128/api-ht-sb/api/v1/files/images/ちえこ.png

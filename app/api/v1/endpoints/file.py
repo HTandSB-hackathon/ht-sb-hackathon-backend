@@ -17,6 +17,31 @@ def get_file_service() -> StorageService:
             status_code=500, detail="Failed to initialize TASUKI service. Please check API key configuration."
         )
 
+# 画像をフロントエンドに表示するためのプロキシーエンドポイント
+@router.get("/images/{file_path:path}")
+async def get_image(
+    file_path: str,
+    storage: StorageService = Depends(get_file_service),
+    # current_user = Depends(deps.get_current_user)
+):
+    """画像を取得する"""
+    try:
+        contents = await storage.download_file(file_path)
+        if not contents:
+            raise HTTPException(status_code=404, detail="画像が見つかりません")
+
+        # 画像のMIMEタイプを推測
+        content_type = "image/jpeg" if file_path.endswith((".jpg", ".jpeg")) else "image/png"
+
+        return Response(
+            content=contents,
+            media_type=content_type
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="画像が見つかりません")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"画像取得エラー: {str(e)}")
+
 @router.post("/upload/")
 async def upload_file(
     file: UploadFile = File(...),
