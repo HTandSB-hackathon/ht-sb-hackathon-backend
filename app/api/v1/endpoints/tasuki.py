@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.core.tasuki.tasuki_client import TasukiClient
 from app.crud.character import get_character_by_id
-from app.crud.tasuki import TasukiService, get_all_chat_count, get_chat_count, get_chat_history, save_chat_message
-from app.schemas.chat import ChatInput, ChatMessage, ChatOutput
+from app.crud.tasuki import TasukiService, get_all_chat_count, get_all_chat_count_by_character, get_chat_count, get_chat_history, save_chat_message
+from app.schemas.chat import ChatCount, ChatInput, ChatMessage, ChatOutput
 
 router = APIRouter()
 
@@ -143,4 +143,20 @@ async def tasuki_chat_count_by_character(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"チャット履歴の件数取得に失敗しました。{str(e)}"
+        )
+    
+@router.get("/chat/count/all_by_characters", tags=["tasuki"], response_model=List[ChatCount])
+async def tasuki_chat_count_all_by_characters(
+    mongodb: AsyncIOMotorDatabase = Depends(deps.get_mongo_db),
+    current_user = Depends(deps.get_current_user)
+) -> List[ChatCount]:
+    """
+    ユーザーの全キャラクターとのチャット履歴の件数を取得するエンドポイント
+    """
+    try:
+        counts = await get_all_chat_count_by_character(mongodb, user_id=current_user.id)
+        return counts
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"全キャラクターのチャット履歴件数取得に失敗しました。{str(e)}"
         )

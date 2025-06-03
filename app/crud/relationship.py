@@ -5,6 +5,19 @@ from app.models.relationship import LevelThreshold, Relationship
 from app.schemas.relationship import LevelThresholdResponse, RelationshipResponse, RelationshipUpdate
 
 
+def get_relationships_by_user_id(db: Session, user_id: int) -> list[RelationshipResponse]:
+    """
+    指定したユーザーIDに紐づく信頼関係を取得
+    """
+    relationships = db.query(Relationship).filter(
+        Relationship.user_id == user_id
+    ).all()
+
+    if not relationships:
+        return []
+    
+    return [RelationshipResponse.from_orm(rel) for rel in relationships]
+
 def get_relationships_by_user_id_and_character_id(db: Session, user_id: int, character_id: int) -> RelationshipResponse:
     """
     指定したユーザーIDとキャラクターIDに紐づく信頼関係を取得
@@ -17,7 +30,6 @@ def get_relationships_by_user_id_and_character_id(db: Session, user_id: int, cha
     if not relationships:
         return RelationshipResponse()
     return RelationshipResponse.from_orm(relationships)
-
 
 def get_level_thresholds_by_character_id_and_trust_level_id(db: Session, character_id: int, trust_level_id: int) -> LevelThresholdResponse:
     """
@@ -32,7 +44,6 @@ def get_level_thresholds_by_character_id_and_trust_level_id(db: Session, charact
     if not level_threshold:
         return LevelThresholdResponse()
     return LevelThresholdResponse.from_orm(level_threshold)
-
 
 def update_relationship_trust_level(db: Session, user_id: int, character_id: int, new_trust_level_id: int) -> RelationshipResponse:
     """
@@ -52,7 +63,6 @@ def update_relationship_trust_level(db: Session, user_id: int, character_id: int
     db.commit()
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)
-
 
 def update_relationship_total_point(db: Session, user_id: int, character_id: int, points_to_add: int) -> RelationshipResponse:
     """

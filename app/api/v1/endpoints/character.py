@@ -46,6 +46,25 @@ def read_locked_characters(
     characters = crud.get_characters_without_user(db, user_id=current_user_id)
     return characters
 
+@router.get("/all", response_model=List[RelationshipResponse])
+def read_all_relationships(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user=Depends(deps.get_current_user)
+) -> List[RelationshipResponse]:
+    """
+    指定したキャラクターの全てのリレーションシップ情報を取得するエンドポイント
+    """
+    current_user_id = current_user.id if current_user else None
+    if current_user_id is None:
+        return []
+    relationships = relationship_crud.get_relationships_by_user_id(
+        db, user_id=current_user_id
+    )
+    return relationships
+
+
+
 @router.get("/{character_id}", response_model=RelationshipResponse)
 def read_relationship(
     *,
