@@ -37,6 +37,7 @@ class RelationshipBase(BaseModel):
     trust_level_id: int = Field(..., description="信頼レベルID")
     total_points: int = Field(default=0, ge=0, description="総ポイント数")
     conversation_count: int = Field(default=0, ge=0, description="会話回数")
+    next_level_points: int = Field(default=100, ge=0, description="次のレベルに必要なポイント数")
     first_met_at: Optional[datetime] = Field(None, description="初回出会い日時")
     is_favorite: bool = Field(default=False, description="お気に入りフラグ")
 
