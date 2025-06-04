@@ -14,4 +14,7 @@ from app.models.city import Prefecture, Municipality # noqa
 from app.models.occupation import Occupation # noqa
 
 # TrustLevelモデルをインポート
-from app.models.relationship import TrustLevel, Relationship # noqa
+from app.models.relationship import TrustLevel, Relationship, LevelThreshold # noqa
+
+# TrustLevelモデルをインポート
+from app.models.achivement import Achivement, UserAchivement
