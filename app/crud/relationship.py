@@ -38,7 +38,7 @@ def get_level_thresholds_by_character_id_and_trust_level_id(db: Session, charact
 
     level_threshold = db.query(LevelThreshold).filter(
         LevelThreshold.character_id == character_id,
-        LevelThreshold.trust_level_id == trust_level_id
+        LevelThreshold.trust_level_id == 1
     ).first()
 
     if not level_threshold:
@@ -54,12 +54,22 @@ def insert_relationship(
     指定したユーザーIDとキャラクターIDに紐づく信頼関係を新規作成
     信頼レベルはデフォルトで1、total_pointsは0、会話数は0、初対面日時は現在日時、is_favoriteはFalseとする
     """
+    
+    # 対象のキャラクターのlevel_thresholdsを取得
+    level_threshold = db.query(LevelThreshold).filter(
+        LevelThreshold.character_id == character_id,
+        LevelThreshold.trust_level_id == 1  # デフォルトの信頼レベル
+    ).first()
+
+    next_level_points = level_threshold.required_points if level_threshold else 100  # デフォルト値は100
+
     db_relationship = Relationship(
         user_id=user_id,
         character_id=character_id,
         trust_level_id=1,  # デフォルトの信頼レベル
         total_points=0,    # 初期ポイントは0
         conversation_count=0,  # 初期会話数は0
+        next_level_points=next_level_points,  # 次のレベルに必要なポイント
         first_met_at=None,  # 初対面日時はNone（後で設定可能）
         is_favorite=False   # 初期状態ではお気に入りではない
     )
@@ -69,7 +79,7 @@ def insert_relationship(
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)
 
-def update_relationship_trust_level(db: Session, user_id: int, character_id: int, new_trust_level_id: int) -> RelationshipResponse:
+def update_relationship_trust_level(db: Session, user_id: int, character_id: int, new_trust_level_id: int, next_level_points: int) -> RelationshipResponse:
     """
     指定したユーザーIDとキャラクターIDに紐づく信頼関係の信頼レベルを更新
     """
@@ -84,6 +94,7 @@ def update_relationship_trust_level(db: Session, user_id: int, character_id: int
     
     # 信頼レベルを更新
     db_relationship.trust_level_id = new_trust_level_id
+    db_relationship.next_level_points = next_level_points
     db.commit()
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)

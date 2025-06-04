@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends
@@ -153,7 +152,7 @@ def read_character_stories(
 
 
 @router.put("/{character_id}/check_trust_level", response_model=RelationshipResponse)
-def check_trust_level(
+async def check_trust_level(
     *,
     db: Session = Depends(deps.get_db),
     character_id: int,
@@ -175,45 +174,49 @@ def check_trust_level(
 
     current_trust_level_id = db_relationship.trust_level_id
     total_points = db_relationship.total_points
-    conversation_count = db_relationship.conversation_count
-    first_met_at = db_relationship.first_met_at
+    # conversation_count = await get_chat_count(mongodb, user_id=current_user.id, character_id=character_id)
+    # first_met_at = db_relationship.first_met_at
 
     # キャラクターの全てのレベル閾値を信頼度IDの降順で取得
     all_thresholds = db.query(LevelThresholdModel).filter(
         LevelThresholdModel.character_id == character_id
-    ).order_by(LevelThresholdModel.trust_level_id.desc()).all()
+    ).order_by(LevelThresholdModel.trust_level_id.asc()).all()
 
     target_trust_level_id = current_trust_level_id # 更新がない場合のデフォルト
+    target_next_level_points = db_relationship.next_level_points # 更新がない場合のデフォルト
 
+    conditions_met = False
     for threshold in all_thresholds:
         # この閾値レベルが現在のレベル以下なら、それ以上高いレベルにはなれないのでチェック終了
-        if threshold.trust_level_id <= current_trust_level_id:
-            break
 
-        conditions_met = True
-        if threshold.required_points is not None and total_points < threshold.required_points:
-            conditions_met = False
-        if threshold.required_conversations is not None and conversation_count < threshold.required_conversations:
-            conditions_met = False
-        
-        if threshold.required_days_from_first is not None:
-            if first_met_at is not None:
-                first_met_at_aware = first_met_at.replace(tzinfo=timezone.utc) if first_met_at.tzinfo is None else first_met_at
-                days_passed = (datetime.now(timezone.utc) - first_met_at_aware).days
-                if days_passed < threshold.required_days_from_first:
-                    conditions_met = False
-            else:
-                conditions_met = False
-        
         if conditions_met:
             # 条件を満たす最も高いレベルが見つかった場合ループを抜ける
+            print(f"条件を満たすレベルが見つかりました: {threshold.trust_level_id}, 必要ポイント: {threshold.required_points}")
             target_trust_level_id = threshold.trust_level_id
+            target_next_level_points = threshold.required_points
             break
 
+        print(total_points, threshold.required_points, total_points < threshold.required_points)
+        if threshold.required_points is not None and total_points >= threshold.required_points:
+            conditions_met = True
+            
+        # if threshold.required_conversations is not None and conversation_count < threshold.required_conversations:
+        #     conditions_met = False
+        
+        # if threshold.required_days_from_first is not None:
+        #     if first_met_at is not None:
+        #         first_met_at_aware = first_met_at.replace(tzinfo=timezone.utc) if first_met_at.tzinfo is None else first_met_at
+        #         days_passed = (datetime.now(timezone.utc) - first_met_at_aware).days
+        #         if days_passed < threshold.required_days_from_first:
+        #             conditions_met = False
+        #     else:
+        #         conditions_met = False
+        
+    print(f"Current Trust Level ID: {current_trust_level_id}, Target Trust Level ID: {target_trust_level_id}, Total Points: {total_points}, Next Level Points: {target_next_level_points}")
     if target_trust_level_id > current_trust_level_id:
         updated_relationship_response = relationship_crud.update_relationship_trust_level(
             # level_thresholdsにはtrust_levelからレベルアップするための条件が含まれているため更新する値は+1を指定
-            db, user_id=current_user_id, character_id=character_id, new_trust_level_id=target_trust_level_id+1 
+            db, user_id=current_user_id, character_id=character_id, new_trust_level_id=target_trust_level_id, next_level_points=target_next_level_points
         )
         if not updated_relationship_response or not hasattr(updated_relationship_response, 'id'):
             return RelationshipResponse.from_orm(db_relationship) # 更新失敗時は元データを返す

@@ -160,26 +160,20 @@ INSERT INTO stories (
     NOW()
 );
 
-INSERT INTO relationships (
-    user_id,
+INSERT INTO level_thresholds (
     character_id,
     trust_level_id,
-    total_points,
-    conversation_count,
-    first_met_at,
-    created_date,
-    updated_date,
-    is_favorite
-) VALUES (
-    1,
-    (SELECT id FROM characters WHERE name = 'ちえこ' LIMIT 1),
-    (SELECT id FROM trust_levels WHERE name = '初対面' LIMIT 1),
-    10,
-    1,
-    NOW(),
-    NOW(),
-    NOW(),
-    true
-);
-
-https://163.44.125.128/api-ht-sb/api/v1/files/images/ちえこ.png
+    required_points,
+    required_conversations,
+    required_days_from_first
+) VALUES 
+(1, (SELECT id FROM trust_levels WHERE name = '初対面' LIMIT 1), 10, 10, 0),
+(1, (SELECT id FROM trust_levels WHERE name = '顔見知り' LIMIT 1), 50, 20, 5),
+(1, (SELECT id FROM trust_levels WHERE name = '友人' LIMIT 1), 100, 50, 15),
+(1, (SELECT id FROM trust_levels WHERE name = '親友' LIMIT 1), 300, 100, 30),
+(1, (SELECT id FROM trust_levels WHERE name = '家族同然' LIMIT 1), 1000, 200, 50),
+(2, (SELECT id FROM trust_levels WHERE name = '初対面' LIMIT 1), 50, 10, 0),
+(2, (SELECT id FROM trust_levels WHERE name = '顔見知り' LIMIT 1), 100, 25, 5),
+(2, (SELECT id FROM trust_levels WHERE name = '友人' LIMIT 1), 500, 50, 10),
+(2, (SELECT id FROM trust_levels WHERE name = '親友' LIMIT 1), 1000, 200,15),
+(2, (SELECT id FROM trust_levels WHERE name = '家族同然' LIMIT 1), 2000, 500, 80);
