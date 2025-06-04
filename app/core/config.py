@@ -35,8 +35,11 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
 
     # Redis設定
+    REDIS_URL: Optional[str] = None  # RedisのURLが設定されている場合
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
+    REDIS_IMAGE_CACHE_TTL: int = 3600  # 1時間
+    REDIS_MAX_IMAGE_SIZE: int = 1024 * 1024 * 5  # 最大5MB
 
     # S3/MinIO設定
     S3_ENDPOINT_URL: Optional[str] = os.getenv("S3_ENDPOINT_URL")  # MinIO用、AWS S3の場合はNone
@@ -76,6 +79,7 @@ class Settings(BaseSettings):
             )
             # または: self.SQLALCHEMY_DATABASE_URI = "sqlite:///./test.db"
 
+        self.REDIS_URL = f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
         self.MONGODB_URL = f"mongodb://{self.MONGODB_USERNAME}:{self.MONGODB_PASSWORD}@{self.MONGODB_HOST}:27017"
             
     class Config:
