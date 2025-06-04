@@ -17,4 +17,3 @@ from app.models.occupation import Occupation # noqa
 from app.models.relationship import TrustLevel, Relationship, LevelThreshold # noqa
 
 # TrustLevelモデルをインポート
-from app.models.achivement import Achivement, UserAchivement

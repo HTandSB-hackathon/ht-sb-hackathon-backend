@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, Boolean
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -28,5 +28,5 @@ class UserAchivement(Base):
     updated_date = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    user = relationship("Users", back_populates="achivements")
-    achivement = relationship("Achivement", back_populates="users")
+    # user = relationship("Users", back_populates="achivements")
+    # achivement = relationship("Achivement", back_populates="users")
