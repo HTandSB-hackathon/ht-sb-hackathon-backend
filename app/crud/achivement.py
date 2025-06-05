@@ -1,9 +1,12 @@
 from typing import List, Optional
 
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select, join
 
+from app.crud.tasuki import get_all_chat_count, get_all_chat_count_by_character
 from app.models.achivement import Achivement, UserAchivement
+from app.models.relationship import Relationship
 from app.schemas.achivement import UserAchivementCreate, UserAchivementUpdate
 
 
@@ -55,7 +58,7 @@ def update_user_achivement(db: Session, db_obj: UserAchivement, obj_in: UserAchi
     db.refresh(db_obj)
     return db_obj
 
-def get_achivement(db: Session, achivement_id: int) -> Optional[Achivement]:
+async def get_achivement(db: Session, achivement_id: int) -> Optional[Achivement]:
     """実績IDで実績を取得"""
     return db.query(Achivement).filter(Achivement.id == achivement_id).first()
 
@@ -63,7 +66,7 @@ def get_unlocked_achivements_for_user(db: Session, user_id: int) -> List[Achivem
     """ユーザーがアンロックした実績のリストを取得"""
     return db.query(Achivement).join(UserAchivement).filter(
         UserAchivement.user_id == user_id,
-        UserAchivement.is_unlocked == True
+        UserAchivement.is_unlocked
     ).all()
 
 def get_locked_achivements_for_user(db: Session, user_id: int) -> List[Achivement]:
@@ -75,7 +78,7 @@ def get_locked_achivements_for_user(db: Session, user_id: int) -> List[Achivemen
     # is_unlocked = False の実績を取得
     locked_explicitly = db.query(Achivement).join(UserAchivement).filter(
         UserAchivement.user_id == user_id,
-        UserAchivement.is_unlocked == False
+        ~UserAchivement.is_unlocked
     ).all()
     
     # UserAchivementにレコードが存在しない実績を取得
@@ -84,3 +87,63 @@ def get_locked_achivements_for_user(db: Session, user_id: int) -> List[Achivemen
     ).all()
     
     return locked_explicitly + achivements_not_in_userachivements
+
+async def check_achivement_unlockable(
+    db: Session, mongodb: AsyncIOMotorDatabase, user_id: int, achivement_id: int
+) -> bool:
+    """指定したユーザーが特定の実績をアンロックできるかどうかをチェック"""
+    # ここでは単純に実績IDが1の場合は常にアンロック可能とする仮実装
+    if achivement_id == 1:
+        relationships = await db.query(Relationship).filter(
+            Relationship.user_id == user_id,
+        ).all()
+
+        if not relationships:
+            # ユーザーがまだ何も関係を持っていない場合はアンロック不可
+            return  False
+        # 関係が1つ以上あればアンロック可能とする
+        return True
+
+    elif achivement_id == 2:
+        covnersation_count = await get_all_chat_count(mongodb, user_id)
+        if covnersation_count > 0:
+            # チャットメッセージが1件以上あればアンロック可能とする
+            return True
+        # チャットメッセージがない場合はアンロック不可
+        return False
+
+    elif achivement_id == 3:
+        relationships = await db.query(Relationship).filter(
+            Relationship.user_id == user_id,
+            Relationship.trust_level_id == 4
+        ).all()
+
+        if not relationships:
+            return  False
+        return True
+    
+    elif achivement_id == 5:
+        relationships = await db.query(Relationship).filter(
+            Relationship.user_id == user_id,
+            Relationship.trust_level_id == 4
+        ).all()
+
+        if not relationships:
+            return  False
+        return True
+    
+    elif achivement_id == 6:
+        covnersation_count_by_character = await get_all_chat_count_by_character(mongodb, user_id)
+        if len(covnersation_count_by_character) >= 10:
+            # キャラクターごとのチャットメッセージが1件以上あればアンロック可能とする
+            return True
+        # チャットメッセージがない場合はアンロック不可
+        return False
+    
+    elif achivement_id == 7:
+        covnersation_count_by_character = await get_all_chat_count_by_character(mongodb, user_id)
+        if len(covnersation_count_by_character) >= 50:
+            # キャラクターごとのチャットメッセージが1件以上あればアンロック可能とする
+            return True
+        # チャットメッセージがない場合はアンロック不可
+        return False
