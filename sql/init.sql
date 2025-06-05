@@ -177,3 +177,53 @@ INSERT INTO level_thresholds (
 (2, (SELECT id FROM trust_levels WHERE name = '友人' LIMIT 1), 500, 50, 10),
 (2, (SELECT id FROM trust_levels WHERE name = '親友' LIMIT 1), 1000, 200,15),
 (2, (SELECT id FROM trust_levels WHERE name = '家族同然' LIMIT 1), 2000, 500, 80);
+
+INSERT INTO achivements (
+    name,
+    description,
+    icon_image_url,
+    created_date,
+    updated_date
+) VALUES (
+    'ようこそ、福島県へ',
+    '初めてのキャラクターの取得を行った',
+    'http://host.docker.internal:8000/api/v1/files/images/achievement_first_conversation.jpg',
+    NOW(),
+    NOW()
+),(
+    '初めての会話',
+    'キャラクターと初めて会話をした',
+    'http://host.docker.internal:8000/api/v1/files/images/achievement_first_conversation.jpg',
+    NOW(),
+    NOW()
+),(
+    '親友の証',
+    'キャラクターとの信頼レベルが「親友」になった',
+    'http://host.docker.internal:8000/api/v1/files/images/achievement_best_friend.png',
+    NOW(),
+    NOW()
+), (
+    '家族同然の絆',
+    'キャラクターとの信頼レベルが「家族同然」になった',
+    'http://host.docker.internal:8000/api/v1/files/images/achievement_family.png',
+    NOW(),
+    NOW()
+),(
+    '福島県マスター',
+    '福島県のキャラクターと50人と会話をした',
+    'http://host.docker.internal:8000/api/v1/files/images/achievement_fukushima_all_characters.png',
+    NOW(),
+    NOW()
+),(
+    '福島県の魅力発見',
+    '福島県のキャラクターと10人と会話をした',
+    'http://host.docker.internal:8000/api/v1/files/images/achievement_fukushima_all_characters.png',
+    NOW(),
+    NOW()
+),(
+    '初めての福島県の物語',
+    'はじめて、福島県のキャラクターのストーリーを読んだ',
+    'http://host.docker.internal:8000/api/v1/files/images/achievement_fukushima_all_stories.png',
+    NOW(),
+    NOW()
+);
