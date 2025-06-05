@@ -139,14 +139,14 @@ def update_relationship(
     if not db_relationship:
         return RelationshipResponse()
     # 更新可能なフィールドを更新
-    if update_data.trust_level_id is not None:
-        db_relationship.trust_level_id = update_data.trust_level_id
-    if update_data.total_points is not None:
-        db_relationship.total_points = update_data.total_points
-    if update_data.conversation_count is not None:
-        db_relationship.conversation_count = update_data.conversation_count
-    if update_data.first_met_at is not None:
-        db_relationship.first_met_at = update_data.first_met_at
+    # if update_data.trust_level_id is not None:
+    #     db_relationship.trust_level_id = update_data.trust_level_id
+    # if update_data.total_points is not None:
+    #     db_relationship.total_points = update_data.total_points
+    # if update_data.conversation_count is not None:
+    #     db_relationship.conversation_count = update_data.conversation_count
+    # if update_data.first_met_at is not None:
+    #     db_relationship.first_met_at = update_data.first_met_at
     if update_data.is_favorite is not None:
         db_relationship.is_favorite = update_data.is_favorite
     # 更新日時を自動で更新
