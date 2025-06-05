@@ -8,7 +8,7 @@ from app.crud import character as crud
 from app.crud import relationship as relationship_crud
 from app.models.relationship import LevelThreshold as LevelThresholdModel
 from app.models.relationship import Relationship as RelationshipModel
-from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryResponse
+from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryLockedResponse, StoryUnlockedResponse
 from app.schemas.relationship import RelationshipResponse, RelationshipUpdate
 
 router = APIRouter()
@@ -134,22 +134,37 @@ def update_relationship(
     
 
 # キャラクターのストーリーを取得するエンドポイント
-@router.get("/{character_id}/stories", response_model=List[StoryResponse])
+@router.get("/{character_id}/stories/unlocked", response_model=List[StoryUnlockedResponse])
 def read_character_stories(
     *,
     db: Session = Depends(deps.get_db),
     character_id: int,
     current_user=Depends(deps.get_current_user)
-) -> List[StoryResponse]:
+) -> List[StoryUnlockedResponse]:
     """
-    指定したキャラクターのストーリーを取得するエンドポイント
+    指定したキャラクターのアンロック済みストーリーを取得するエンドポイント
     """
     current_user_id = current_user.id if current_user else None
     if current_user_id is None:
         return []
-    stories = crud.get_character_stories(db, character_id=character_id, user_id=current_user_id)
+    stories = crud.get_unlocked_stories(db, character_id=character_id, user_id=current_user_id)
     return stories
 
+@router.get("/{character_id}/stories/locked", response_model=List[StoryLockedResponse])
+def read_character_locked_stories(
+    *,
+    db: Session = Depends(deps.get_db),
+    character_id: int,
+    current_user=Depends(deps.get_current_user)
+) -> List[StoryLockedResponse]:
+    """
+    指定したキャラクターのアンロック済みストーリーを取得するエンドポイント
+    """
+    current_user_id = current_user.id if current_user else None
+    if current_user_id is None:
+        return []
+    stories = crud.get_locked_stories(db, character_id=character_id, user_id=current_user_id)
+    return stories
 
 @router.put("/{character_id}/check_trust_level", response_model=RelationshipResponse)
 async def check_trust_level(
@@ -224,3 +239,25 @@ async def check_trust_level(
     else:
         # 更新がない場合は現在のリレーションシップ情報を返す
         return RelationshipResponse.from_orm(db_relationship)
+
+@router.put("/{character_id}/stories/unlock", response_model=StoryUnlockedResponse)
+async def unlock_character_story(
+    *,
+    db: Session = Depends(deps.get_db),
+    character_id: int,
+    current_user=Depends(deps.get_current_user)
+) -> StoryUnlockedResponse:
+    """
+    指定したキャラクターのストーリーをアンロックするエンドポイント
+    """
+    current_user_id = current_user.id if current_user else None
+    if current_user_id is None:
+        return StoryUnlockedResponse()
+
+    # ストーリーをアンロックするためのロジックを実装
+    story = await crud.unlock_character_story(db, character_id=character_id, user_id=current_user_id)
+    
+    if not story:
+        return StoryUnlockedResponse()
+
+    return story

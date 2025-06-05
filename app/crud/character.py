@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.character import Character, Story
 from app.models.relationship import Relationship
-from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryResponse
+from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryLockedResponse, StoryUnlockedResponse
 
 
 # 全キャラクター情報を取得
@@ -53,17 +53,64 @@ def get_characters_without_user(db: Session, user_id: int) -> List[CharacterLock
     return [CharacterLockedResponse.from_orm(character) for character in characters]
 
 # ストーリーを取得
-def get_character_stories(db: Session, character_id: int, user_id: int) -> List[CharacterResponse]:
+def get_unlocked_stories(db: Session, character_id: int, user_id: int) -> List[StoryUnlockedResponse]:
     """
-    指定したキャラクターのストーリーを取得
+    指定したキャラクターのストーリーを取得をRelationshipのTrustLevelに紐づけて取得
     """
-    relationships = db.query(Relationship).filter(
+    relationship = db.query(Relationship).filter(
         Relationship.user_id == user_id,
         Relationship.character_id == character_id
-    ).all()
-    if not relationships:
+    ).first()
+    if not relationship:
         return []
-    stories = db.query(Story).filter(Story.character_id == character_id).all()
+    stories = db.query(Story).filter(
+        Story.character_id == character_id,
+        Story.required_trust_level <= relationship.trust_level_id
+    ).all()
     if not stories:
         return []
-    return [StoryResponse.from_orm(story) for story in stories]
+    return [StoryUnlockedResponse.from_orm(story) for story in stories]
+
+def get_locked_stories(db: Session, character_id: int, user_id: int) -> List[StoryLockedResponse]:
+    """
+    指定したキャラクターのストーリーを取得をRelationshipのTrustLevelに紐づけて取得
+    """
+    relationship = db.query(Relationship).filter(
+        Relationship.user_id == user_id,
+        Relationship.character_id == character_id
+    ).first()
+    if not relationship:
+        return []
+    stories = db.query(Story).filter(
+        Story.character_id == character_id,
+        Story.required_trust_level > relationship.trust_level_id
+    ).all()
+    if not stories:
+        return []
+    return [StoryLockedResponse.from_orm(story) for story in stories]
+
+async def unlock_character_story(
+    db: Session,
+    character_id: int,
+    user_id: int,
+) -> StoryUnlockedResponse:
+    """
+    キャラクターのストーリーをアンロックする
+    """
+    relationship = db.query(Relationship).filter(
+        Relationship.user_id == user_id,
+        Relationship.character_id == character_id
+    ).first()
+    
+    if not relationship:
+        raise ValueError("Relationship not found for the given user and character")
+
+    story = db.query(Story).filter(
+        Story.character_id == character_id,
+        Story.required_trust_level == relationship.trust_level_id
+    ).first()
+
+    if not story:
+        return None
+        
+    return StoryUnlockedResponse.from_orm(story)

@@ -113,11 +113,22 @@ class StoryUpdate(BaseModel):
     content: Optional[str] = Field(None, min_length=1, description="ストーリー内容")
     required_trust_level: Optional[int] = Field(None, ge=0, description="必要な信頼レベル")
 
-class StoryResponse(StoryBase):
+class StoryUnlockedResponse(StoryBase):
     """ストーリー レスポンス用スキーマ"""
     id: int = Field(..., description="ストーリーID")
     created_date: datetime = Field(..., description="作成日時")
     updated_date: Optional[datetime] = Field(None, description="更新日時")
+    is_locked: bool = False
+
+    class Config:
+        from_attributes = True
+
+class StoryLockedResponse(StoryBase):
+    """ストーリー レスポンス用スキーマ"""
+    id: int = Field(..., description="ストーリーID")
+    created_date: datetime = Field(..., description="作成日時")
+    updated_date: Optional[datetime] = Field(None, description="更新日時")
+    is_locked: bool = True
 
     class Config:
         from_attributes = True
