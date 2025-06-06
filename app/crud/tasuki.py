@@ -158,16 +158,43 @@ async def get_all_chat_count_by_character(
         collections = mongodb["chats"]
         pipeline = [
             {"$match": {"user_id": user_id}},
-            {"$group": {"_id": "$character_id", "count": {"$sum": 1}}},
-            {"$project": {"character_id": "$_id", "count": 1, "_id": 0}}
+            {
+                "$group": {
+                    "_id": "$character_id",
+                    "count": {"$sum": 1},
+                    "last_chat_date": {"$max": "$timestamp"},
+                }
+            },
+            {
+                "$project": {
+                    "character_id": "$_id",
+                    "count": 1,
+                    "last_chat_date": 1,
+                    "_id": 0,
+                }
+            },
         ]
         results = await collections.aggregate(pipeline).to_list(length=None)
 
-        chat_counts = [ChatCount(character_id=result["character_id"], count=result["count"]) for result in results]
+        chat_counts = []
+        for result in results:
+            last_chat_date_obj = None
+            if result.get("last_chat_date"):
+                try:
+                    last_chat_date_obj = datetime.fromisoformat(result["last_chat_date"].replace("Z", "+00:00"))
+                except ValueError:
+                    logger.warning(f"Could not parse timestamp: {result['last_chat_date']} for character_id: {result['character_id']}")
+            chat_counts.append(
+                ChatCount(
+                    character_id=result["character_id"],
+                    count=result["count"],
+                    last_chat_date=last_chat_date_obj,
+                )
+            )
+        
         logger.info(f"全キャラクターのチャットメッセージ数を取得しました: user_id={user_id}, counts={chat_counts}")
         return chat_counts
 
     except Exception as e:
         logger.error(f"全キャラクターのチャットメッセージ数の取得に失敗しました: {e}")
         raise
-    
