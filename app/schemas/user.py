@@ -29,6 +29,8 @@ class UserOAuthCreate(UserBase):
 
 class UserUpdate(UserBase):
     """ユーザー更新スキーマ"""
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
     password: Optional[str] = None
     bio: Optional[str] = None
     profile_image_url: Optional[str] = None
