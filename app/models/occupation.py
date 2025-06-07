@@ -14,4 +14,4 @@ class Occupation(Base):
     updated_date = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    characters = relationship("Character", back_populates="occupation")
+    # characters = relationship("Character", back_populates="occupation")
