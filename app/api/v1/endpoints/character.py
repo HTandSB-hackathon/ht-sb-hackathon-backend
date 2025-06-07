@@ -1,6 +1,7 @@
+import json
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.orm import Session
 
@@ -8,12 +9,22 @@ from app.api import deps
 from app.crud import character as crud
 from app.crud import relationship as relationship_crud
 from app.crud.event import save_event
+from app.crud.redis import RedisCacheService
 from app.models.relationship import LevelThreshold as LevelThresholdModel
 from app.models.relationship import Relationship as RelationshipModel
 from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryLockedResponse, StoryUnlockedResponse
 from app.schemas.relationship import RelationshipResponse, RelationshipUpdate
 
 router = APIRouter()
+
+def get_redis_service() -> RedisCacheService:
+    """Redisキャッシュサービスを取得"""
+    try:
+        return RedisCacheService()
+    except ValueError:
+        raise HTTPException(
+            status_code=500, detail="Failed to initialize Redis cache service. Please check configuration."
+        )
 
 # ユーザーに紐づいたキャラクター情報を取得するエンドポイント
 @router.get("", response_model=List[CharacterResponse])
@@ -279,3 +290,27 @@ async def unlock_character_story(
         return StoryUnlockedResponse()
 
     return story
+
+@router.put("/{character_id}/levelup/limit")
+async def level_up_limit(
+    *,
+    cache_service: RedisCacheService = Depends(get_redis_service),
+    current_user=Depends(deps.get_current_user)
+):
+    """
+    キャラクターのレベルアップ制限を確認するエンドポイント
+    """
+    current_user_id = current_user.id if current_user else None
+    if current_user_id is None:
+        return {"message": "User not authenticated"}
+
+    # キャッシュからレベルアップ制限を取得
+    cache_key = f"levelup_limit:{current_user_id}"
+    limit_data = await cache_service.get_cached_data(cache_key)  # 2時間の有効期限
+
+    # limit_dataはbytes型で返されるため、JSONデコードを行う
+    if limit_data:
+        try:
+            limit_data = int(limit_data.decode('utf-8'))
+        except json.JSONDecodeError:
+            return {"message": "Invalid cache data format"}

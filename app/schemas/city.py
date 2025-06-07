@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -96,15 +96,24 @@ class MunicipalityStatistics(BaseModel):
     total_municipalities: int = Field(..., description="総市区町村数")
     municipalities_by_prefecture: dict[str, int] = Field(..., description="都道府県別市区町村数")
 
-# 前方参照の解決
-def resolve_forward_refs():
-    """前方参照を解決する関数"""
-    
-    MunicipalityWithDetails.model_rebuild()
+class MunicipalityFascinating(BaseModel):
+    """市区町村の魅力的な情報"""
+    prefecture_id: int = Field(..., description="都道府県ID")
+    municipality_id: int = Field(..., description="市区町村ID")
+    content: str = Field(..., description="魅力的なキャッチフレーズ")
+    color: str = Field(..., description="魅力的な色")
+    emoji: str = Field(..., description="魅力的な絵文字")
+    gradient: Optional[str] = Field(None, description="魅力的なグラデーション")
+    details: List[Any] = Field(
+        default_factory=dict,
+        description="魅力的な詳細情報。キーは言語コード、値は詳細情報の辞書"
+    )
 
-# モジュール読み込み時に前方参照を解決
-try:
-    resolve_forward_refs()
-except ImportError:
-    # 他のスキーマモジュールがまだ作成されていない場合は無視
-    pass
+class MunicipalityFascinatingResponse(MunicipalityFascinating):
+    """市区町村の魅力的な情報レスポンス"""
+    id: str = Field(..., description="魅力的な情報ID")
+    created_date: datetime = Field(..., description="作成日時")
+    updated_date: Optional[datetime] = Field(None, description="更新日時")
+
+    class Config:
+        from_attributes = True

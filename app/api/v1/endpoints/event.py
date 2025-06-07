@@ -21,3 +21,13 @@ async def get_latest_events(
     """
     events = await crud.get_latest_events(mongodb, user_id=current_user.id, limit=3)
     return events
+
+@router.get("/fukushima-weeks", response_model=List[schemas.FukushimaWeekResponse], tags=["event"])
+async def get_fukushima_week(
+    mongodb: Session = Depends(deps.get_mongo_db)
+) -> List[schemas.FukushimaWeekResponse]:
+    """
+    福島ウィークのイベントを取得するエンドポイント
+    """
+    fukushima_week = await crud.get_fukushima_week(mongodb)
+    return fukushima_week

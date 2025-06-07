@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.models.character import Character
 from app.models.city import Municipality
 from app.models.relationship import Relationship
-from app.schemas.city import MunicipalityResponse
+from app.schemas.city import MunicipalityFascinatingResponse, MunicipalityResponse
 
 
 # 都道府県のIDに基づいて都市情報を取得
@@ -37,3 +37,38 @@ def get_cities_by_prefecture_with_relationship(db: Session, prefecture_id: int, 
         return []
     
     return [MunicipalityResponse.from_orm(municipality) for municipality in municipalities]
+
+async def get_municipality_fascination(
+    mongo_db: Session,
+    prefecture_id: int,
+) -> List[MunicipalityFascinatingResponse]:
+    """
+    特定の都道府県の市区町村の魅力を取得
+    """
+    try:
+        collection = mongo_db["municipality_fascination"]
+        municipalities = await collection.find({"prefecture_id": prefecture_id}).to_list(length=None)
+
+        if not municipalities:
+            return []
+        
+        result = []
+        for municipality in municipalities:
+            # MongoDBのドキュメントをPydanticモデルに変換
+            result.append(MunicipalityFascinatingResponse(
+                id=str(municipality["_id"]),  # Convert ObjectId to string
+                prefecture_id=int(municipality["prefecture_id"]),
+                municipality_id=int(municipality["municipality_id"]),
+                content=municipality["content"],
+                color=municipality["color"],
+                emoji=municipality["emoji"],
+                gradient=municipality.get("gradient"),
+                details=municipality.get("details", []),  # Can be list or dict
+                created_date=municipality["created_date"],
+                updated_date=municipality.get("updated_date")
+            ))
+        
+        return result
+    except Exception as e:
+        print(f"市区町村の魅力の取得に失敗しました: {e}")
+        raise Exception(f"市区町村の魅力の取得に失敗しました: {str(e)}")
