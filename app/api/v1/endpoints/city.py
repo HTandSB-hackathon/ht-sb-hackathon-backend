@@ -40,3 +40,16 @@ def read_cities_by_prefecture_with_relationship(
     
     cities = crud.get_cities_by_prefecture_with_relationship(db, prefecture_id=prefecture_id, user_id=user_id)
     return cities
+
+# 特定の都道府県の市区町村の魅力を取得するエンドポイント
+@router.get("/prefectures/{prefecture_id}/fascination", response_model=List[schemas.MunicipalityFascinatingResponse])
+async def read_municipality_fascination(
+    *,
+    mongodb: Session = Depends(deps.get_mongo_db),
+    prefecture_id: int
+) -> List[schemas.MunicipalityFascinatingResponse]:
+    """
+    特定の都道府県の市区町村の魅力を取得
+    """
+    municipalities = await crud.get_municipality_fascination(mongo_db=mongodb, prefecture_id=prefecture_id)
+    return municipalities

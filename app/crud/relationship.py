@@ -1,6 +1,8 @@
 
+
 from sqlalchemy.orm import Session
 
+from app.crud.redis import RedisCacheService
 from app.models.relationship import LevelThreshold, Relationship
 from app.schemas.relationship import LevelThresholdResponse, RelationshipResponse, RelationshipUpdate
 
@@ -99,7 +101,7 @@ async def update_relationship_trust_level(db: Session, user_id: int, character_i
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)
 
-def update_relationship_total_point(db: Session, user_id: int, character_id: int, points_to_add: int) -> RelationshipResponse:
+async def update_relationship_total_point(db: Session, cache_service: RedisCacheService, user_id: int, character_id: int, points_to_add: int) -> RelationshipResponse:
     """
     指定したユーザーIDとキャラクターIDに紐づく信頼関係のtotal_pointsにポイントを加算する
     加算するポイントを引数とする（points_to_add）
@@ -109,6 +111,25 @@ def update_relationship_total_point(db: Session, user_id: int, character_id: int
         Relationship.user_id == user_id,
         Relationship.character_id == character_id
     ).first()
+
+    # キャッシュからポイントの確認
+    cache_key = f"levelup_limit:{user_id}"
+    cached_points = await cache_service.get_cached_data(cache_key)
+    if cached_points is not None:
+        cached_points = int(cached_points.decode('utf-8'))
+        if cached_points > 50:
+            return RelationshipResponse.from_orm(db_relationship)
+        else:
+            # キャッシュがある場合はポイントを加算
+            cached_points += points_to_add
+            # cacheに保存
+            await cache_service.cache_data(cache_key, str(cached_points).encode('utf-8'), expiration=60 * 60 * 12)  # 1日有効
+    else:
+        # キャッシュがない場合はデフォルトのポイントを設定
+        cached_points = points_to_add
+        # cacheに保存
+        await cache_service.cache_data(cache_key, str(cached_points).encode('utf-8'), expiration=60 * 60 * 12)
+        
 
     if not db_relationship:
         return RelationshipResponse()

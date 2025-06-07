@@ -48,6 +48,31 @@ class RedisCacheService:
             print(f"Redis cache error: {e}")
             return False
     
+    async def cache_data(
+        self, 
+        key: str, 
+        data: bytes,
+        expiration: Optional[int] = None
+    ):
+        """汎用データをRedisにキャッシュ"""
+        try:
+            cache_key = f"data:{key}"
+            await self.redis_client.set(cache_key, data, ex=expiration)
+            return True
+        except Exception as e:
+            print(f"Redis cache error: {e}")
+            return False
+
+    async def get_cached_data(self, key: str) -> Optional[bytes]:
+        """Redisから汎用データを取得"""
+        try:
+            cache_key = f"data:{key}"
+            cached_data = await self.redis_client.get(cache_key)
+            return cached_data
+        except Exception as e:
+            print(f"Redis get error: {e}")
+            return None
+
     async def get_cached_image(self, file_path: str) -> Optional[Tuple[bytes, str]]:
         """Redisから画像を取得"""
         try:
