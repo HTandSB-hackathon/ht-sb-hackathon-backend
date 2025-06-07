@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
@@ -34,6 +35,7 @@ class ChatCount(BaseModel):
 
     character_id: int = Field(..., description="Character ID")
     count: int = Field(..., ge=0, description="Number of chats with the character")
+    last_chat_date: Optional[datetime] = Field(default=None, description="Date of the last chat with the character")
 
     class Config:
         orm_mode = True

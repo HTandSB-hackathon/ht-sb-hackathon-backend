@@ -40,11 +40,6 @@ class OccupationBulkCreate(BaseModel):
     """職業一括作成用スキーマ"""
     occupations: list[OccupationCreate] = Field(..., description="作成する職業一覧")
 
-    @Field.validator('occupations')
-    def validate_occupations_limit(cls, v):
-        if len(v) > 50:
-            raise ValueError('一度に作成できる職業は50件までです')
-        return v
 
 class OccupationStatistics(BaseModel):
     """職業統計情報"""
