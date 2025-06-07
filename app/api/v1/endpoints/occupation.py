@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.api import deps
 from app.crud import occupation as crud
-from app.schemas import occupation as schemas
 from app.models import user as user_model
+from app.schemas import occupation as schemas
 
 router = APIRouter()
 

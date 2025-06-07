@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import achivement, auth, character, city, file, healthcheck, tasuki, user, occupation
+from .endpoints import achivement, auth, character, city, file, healthcheck, occupation, tasuki, user
 
 api_router = APIRouter()
 
