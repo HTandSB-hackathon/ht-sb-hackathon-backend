@@ -1,11 +1,13 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.orm import Session
 
 from app.api import deps
 from app.crud import character as crud
 from app.crud import relationship as relationship_crud
+from app.crud.event import save_event
 from app.models.relationship import LevelThreshold as LevelThresholdModel
 from app.models.relationship import Relationship as RelationshipModel
 from app.schemas.character import CharacterLockedResponse, CharacterResponse, StoryLockedResponse, StoryUnlockedResponse
@@ -171,7 +173,8 @@ async def check_trust_level(
     *,
     db: Session = Depends(deps.get_db),
     character_id: int,
-    current_user=Depends(deps.get_current_user)
+    current_user=Depends(deps.get_current_user),
+    mongodb: AsyncIOMotorDatabase = Depends(deps.get_mongo_db)
 ) -> RelationshipResponse:
     """
     キャラクターの信頼レベルをチェックし閾値を超えている場合は更新するエンドポイント
@@ -229,10 +232,25 @@ async def check_trust_level(
         
     print(f"Current Trust Level ID: {current_trust_level_id}, Target Trust Level ID: {target_trust_level_id}, Total Points: {total_points}, Next Level Points: {target_next_level_points}")
     if target_trust_level_id > current_trust_level_id:
-        updated_relationship_response = relationship_crud.update_relationship_trust_level(
+        updated_relationship_response = await relationship_crud.update_relationship_trust_level(
             # level_thresholdsにはtrust_levelからレベルアップするための条件が含まれているため更新する値は+1を指定
             db, user_id=current_user_id, character_id=character_id, new_trust_level_id=target_trust_level_id, next_level_points=target_next_level_points
         )
+
+        try: 
+
+            character = crud.get_character_by_id(db, character_id=character_id)
+            await save_event(
+                mongodb,
+                user_id=current_user_id,
+                character_id=character_id,
+                title="信頼度レベルアップ！",
+                event_type="level_up",
+                detail=f"{character.name}との関係が深まりました。")
+        except Exception as e:
+            print(f"イベントの保存に失敗しました: {e}")
+
+
         if not updated_relationship_response or not hasattr(updated_relationship_response, 'id'):
             return RelationshipResponse.from_orm(db_relationship) # 更新失敗時は元データを返す
         return updated_relationship_response
