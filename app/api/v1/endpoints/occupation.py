@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/", response_model=List[schemas.OccupationResponse])
 def read_occupations(
     db: Session = Depends(deps.get_db),
-    current_user: user_model.User = Depends(deps.get_current_active_user),
+    current_user: user_model.Users = Depends(deps.get_current_user),
 ) -> List[schemas.OccupationResponse]:
     """
     職業一覧を取得
@@ -26,7 +26,7 @@ def read_occupation(
     *,
     db: Session = Depends(deps.get_db),
     occupation_id: int,
-    current_user: user_model.User = Depends(deps.get_current_active_user),
+    current_user: user_model.Users = Depends(deps.get_current_user),
 ) -> schemas.OccupationResponse:
     """
     特定の職業情報を取得
