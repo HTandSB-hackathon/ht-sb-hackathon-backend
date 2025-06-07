@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import achivement, auth, character, city, file, healthcheck, occupation, tasuki, user
+from .endpoints import achivement, auth, character, city, event, file, healthcheck, occupation, tasuki, user
 
 api_router = APIRouter()
 
@@ -19,3 +19,5 @@ api_router.include_router(city.router, prefix="/cities", tags=["cities"])
 api_router.include_router(occupation.router, prefix="/occupations", tags=["occupations"])
 api_router.include_router(character.router, prefix="/characters", tags=["characters"])
 api_router.include_router(achivement.router, prefix="/achivements", tags=["achivements"])
+api_router.include_router(event.router, prefix="/events", tags=["events"])
+

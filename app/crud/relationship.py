@@ -79,7 +79,7 @@ def insert_relationship(
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)
 
-def update_relationship_trust_level(db: Session, user_id: int, character_id: int, new_trust_level_id: int, next_level_points: int) -> RelationshipResponse:
+async def update_relationship_trust_level(db: Session, user_id: int, character_id: int, new_trust_level_id: int, next_level_points: int) -> RelationshipResponse:
     """
     指定したユーザーIDとキャラクターIDに紐づく信頼関係の信頼レベルを更新
     """
