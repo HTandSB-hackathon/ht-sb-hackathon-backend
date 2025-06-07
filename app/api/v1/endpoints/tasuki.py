@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.core.tasuki.tasuki_client import TasukiClient
 from app.crud.character import get_character_by_id
+from app.crud.redis import RedisCacheService
 from app.crud.relationship import update_relationship_total_point
 from app.crud.tasuki import TasukiService, get_all_chat_count, get_all_chat_count_by_character, get_chat_count, get_chat_history, save_chat_message
 from app.schemas.chat import ChatCount, ChatInput, ChatMessage, ChatOutput
@@ -29,6 +30,15 @@ def get_tasuki_service(project_id: str, character, tasuki_client: TasukiClient =
     except ValueError:
         raise HTTPException(
             status_code=500, detail="Failed to initialize TASUKI service. Please check API key configuration."
+        )
+    
+def get_redis_service() -> RedisCacheService:
+    """Redisキャッシュサービスを取得"""
+    try:
+        return RedisCacheService()
+    except ValueError:
+        raise HTTPException(
+            status_code=500, detail="Failed to initialize Redis cache service. Please check configuration."
         )
 
 
@@ -65,6 +75,7 @@ async def tasuki_chat(
     character_id: int,
     db: Session = Depends(deps.get_db),
     mongodb: AsyncIOMotorDatabase = Depends(deps.get_mongo_db),
+    cache_service: RedisCacheService = Depends(get_redis_service),
     tasuki_client: TasukiClient = Depends(get_tasuki_client),
     current_user = Depends(deps.get_current_user)
 ) -> ChatOutput:
@@ -105,8 +116,8 @@ async def tasuki_chat(
 
         print(f"出力メッセージ保存結果: {output_result}")
 
-        updated_relationship = update_relationship_total_point(
-            db, user_id=current_user.id, character_id=character.id,
+        updated_relationship = await update_relationship_total_point(
+            db, cache_service, user_id=current_user.id, character_id=character.id,
             points_to_add=1
         )
         print(f"更新された信頼関係: {updated_relationship}")

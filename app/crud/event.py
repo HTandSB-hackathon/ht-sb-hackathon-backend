@@ -1,9 +1,10 @@
 import logging
 from datetime import datetime
+from typing import List
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.schemas.event import EventResponse
+from app.schemas.event import EventResponse, FukushimaWeekResponse
 
 logger = logging.getLogger(__name__)
 
@@ -71,4 +72,28 @@ async def get_latest_events(mongodb: AsyncIOMotorDatabase, user_id: str, limit: 
         
     except Exception as e:
         logger.error(f"最新のイベントの取得に失敗しました: {e}")
+        raise
+
+async def get_fukushima_week(mongodb: AsyncIOMotorDatabase) -> List[FukushimaWeekResponse]:
+    """
+    福島ウィークのイベントを取得する関数
+    """
+    try:
+        collections = mongodb["fukushima-weeks"]
+        # 最新の福島ウィークイベントを3件取得
+        fukushima_weeks = await collections.find().sort("date", -1).limit(3).to_list(length=3)
+        fukushima_week_responses = []
+        for week in fukushima_weeks:
+            fukushima_week_response = FukushimaWeekResponse(
+                id=str(week["_id"]),  # ObjectIdを文字列に変換
+                date=week["date"],
+                title=week["title"],
+                municipality=week["municipality"],
+                url=week["url"]
+            )
+            fukushima_week_responses.append(fukushima_week_response)
+        logger.info(f"福島ウィークイベントを取得しました: count={len(fukushima_week_responses)}")
+        return fukushima_week_responses
+    except Exception as e:
+        logger.error(f"福島ウィークイベントの取得に失敗しました: {e}")
         raise

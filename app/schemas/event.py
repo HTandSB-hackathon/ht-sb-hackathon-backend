@@ -20,3 +20,17 @@ class EventResponse(Event):
 
     class Config:
         orm_mode = True
+
+class FukushimaWeek(BaseModel):
+    """市町村ウィーク"""
+    date: str = Field(..., description="日付")
+    title: str = Field(..., description="タイトル")
+    municipality: str = Field(..., description="市町村名")
+    url: str = Field(..., description="関連URL")
+
+class FukushimaWeekResponse(FukushimaWeek):
+    """市町村ウィークのレスポンススキーマ"""
+    id: str = Field(..., description="ウィークのID")
+
+    class Config:
+        orm_mode = True
