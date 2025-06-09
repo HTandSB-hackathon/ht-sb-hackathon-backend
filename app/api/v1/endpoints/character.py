@@ -97,6 +97,12 @@ def create_relationship(
         return existing_relationship
     
     ## ここで実際はunlockedできるかどうかのチェックを行う
+    check = relationship_crud.unlock_character(
+        db, user_id=current_user_id, character_id=character_id
+    )
+
+    if not check:
+        return RelationshipResponse(id=None)
 
     new_relationship = relationship_crud.insert_relationship(
         db, user_id=current_user_id, character_id=character_id

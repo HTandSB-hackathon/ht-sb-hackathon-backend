@@ -32,14 +32,14 @@ class TrustLevelListResponse(BaseModel):
 
 class RelationshipBase(BaseModel):
     """信頼関係の基本スキーマ"""
-    user_id: int = Field(..., description="ユーザーID")
-    character_id: int = Field(..., description="キャラクターID")
-    trust_level_id: int = Field(..., description="信頼レベルID")
-    total_points: int = Field(default=0, ge=0, description="総ポイント数")
-    conversation_count: int = Field(default=0, ge=0, description="会話回数")
-    next_level_points: int = Field(default=100, ge=0, description="次のレベルに必要なポイント数")
+    user_id: Optional[int] = Field(..., description="ユーザーID")
+    character_id: Optional[int] = Field(..., description="キャラクターID")
+    trust_level_id: Optional[int] = Field(..., description="信頼レベルID")
+    total_points: Optional[int] = Field(default=0, ge=0, description="総ポイント数")
+    conversation_count: Optional[int] = Field(default=0, ge=0, description="会話回数")
+    next_level_points: Optional[int] = Field(default=100, ge=0, description="次のレベルに必要なポイント数")
     first_met_at: Optional[datetime] = Field(None, description="初回出会い日時")
-    is_favorite: bool = Field(default=False, description="お気に入りフラグ")
+    is_favorite: Optional[bool] = Field(default=False, description="お気に入りフラグ")
 
     @validator('total_points')
     def validate_total_points(cls, v):
@@ -80,7 +80,7 @@ class RelationshipUpdate(BaseModel):
 class RelationshipResponse(RelationshipBase):
     """信頼関係レスポンス用スキーマ"""
     id: int = Field(..., description="信頼関係ID")
-    created_date: datetime = Field(..., description="作成日時")
+    created_date: Optional[datetime] = Field(..., description="作成日時")
     updated_date: Optional[datetime] = Field(None, description="更新日時")
 
     class Config:
