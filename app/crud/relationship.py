@@ -3,6 +3,7 @@
 from sqlalchemy.orm import Session
 
 from app.crud.redis import RedisCacheService
+from app.models.character import Character
 from app.models.relationship import LevelThreshold, Relationship
 from app.schemas.relationship import LevelThresholdResponse, RelationshipResponse, RelationshipUpdate
 
@@ -176,3 +177,42 @@ def update_relationship(
     db.commit()
     db.refresh(db_relationship)
     return RelationshipResponse.from_orm(db_relationship)
+
+
+def unlock_character(
+    db: Session,
+    user_id: int,
+    character_id: int
+) -> bool:
+    
+    """
+    指定したユーザーIDとキャラクターIDに紐づく信頼関係を条件をもとにアンロック
+    """
+    
+    characters = db.query(Character).filter(
+        Character.id == character_id,
+    ).first()
+    if not characters:
+        return False
+    
+    # 初期アンロックキャラ
+    inital_characters = ['しゅうへい', 'ひな', 'ゆうき']
+    if characters.name in inital_characters:
+        # 初期アンロックキャラは信頼関係を作成しない
+        return True
+    
+    # キャラクタレベルが2以上が一つ以上であることを確認
+    relationships = db.query(Relationship).filter(
+        Relationship.user_id == user_id,
+        Relationship.trust_level_id >= 2
+    ).all()
+
+    if not relationships:
+        return False
+    # 信頼関係が存在する場合はキャラクターをアンロック
+    level_2_characters = ['さおり', 'しんご', 'たつお', 'あかり']
+    if characters.name in level_2_characters:
+        # 信頼レベルが2以上のキャラクターはアンロック
+        return True
+    
+    return False
