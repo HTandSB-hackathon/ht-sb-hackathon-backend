@@ -18,3 +18,6 @@ from app.models.relationship import TrustLevel, Relationship, LevelThreshold # n
 
 # Achievementモデルをインポート
 from app.models.achivement import Achivement, UserAchivement # noqa
+
+# Nfcモデルをインポート
+from app.models.nfc import UserNfcUuid
