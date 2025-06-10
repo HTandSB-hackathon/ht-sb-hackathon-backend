@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import achivement, auth, character, city, event, file, healthcheck, occupation, tasuki, user, nfc # Added nfc
+from .endpoints import achivement, auth, character, city, event, file, healthcheck, nfc, occupation, tasuki, user  # Added nfc
 
 api_router = APIRouter()
 
