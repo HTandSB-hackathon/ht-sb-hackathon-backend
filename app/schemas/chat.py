@@ -40,3 +40,8 @@ class ChatCount(BaseModel):
     class Config:
         orm_mode = True
         from_attributes = True
+
+class VoiceReaderInput(BaseModel):
+    """Input schema for voice chat"""
+
+    text: str = Field(..., description="Text to be converted to speech")
