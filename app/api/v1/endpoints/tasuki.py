@@ -1,16 +1,18 @@
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.orm import Session
 
 from app.api import deps
+from app.core.aws.polly_client import PollyClient
 from app.core.tasuki.tasuki_client import TasukiClient
 from app.crud.character import get_character_by_id
 from app.crud.redis import RedisCacheService
 from app.crud.relationship import update_relationship_total_point
 from app.crud.tasuki import TasukiService, get_all_chat_count, get_all_chat_count_by_character, get_chat_count, get_chat_history, save_chat_message
-from app.schemas.chat import ChatCount, ChatInput, ChatMessage, ChatOutput
+from app.schemas.chat import ChatCount, ChatInput, ChatMessage, ChatOutput, VoiceReaderInput
 
 router = APIRouter()
 
@@ -39,6 +41,16 @@ def get_redis_service() -> RedisCacheService:
     except ValueError:
         raise HTTPException(
             status_code=500, detail="Failed to initialize Redis cache service. Please check configuration."
+        )
+    
+def get_polly_client():
+    """Amazon Polly clientを取得"""
+    try:
+        polly_client = PollyClient()
+        return polly_client.get_client()
+    except ValueError:
+        raise HTTPException(
+            status_code=500, detail="Failed to initialize Amazon Polly client. Please check AWS credentials."
         )
 
 
@@ -177,4 +189,57 @@ async def tasuki_chat_count_all_by_characters(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"全キャラクターのチャット履歴件数取得に失敗しました。{str(e)}"
+        )
+    
+@router.post("/chat/{character_id}/voice_reader", tags=["tasuki"])
+def tasuki_voice_reader(
+    input: VoiceReaderInput, 
+    character_id: int,
+    polly_client = Depends(get_polly_client),
+    db: Session = Depends(deps.get_db),
+    # current_user = Depends(deps.get_current_user)
+) -> StreamingResponse:
+
+    character = get_character_by_id(db, character_id)
+
+    if not character:
+        raise HTTPException(
+            status_code=404, detail="指定されたキャラクターが見つかりません。"
+        )
+    
+    if not input.text:
+        raise HTTPException(
+            status_code=400, detail="音声化するテキストが指定されていません。"
+        )
+    
+    gender = character.gender
+
+    if gender == 0:
+        voice = "Takumi"
+    elif gender == 1:
+        voice = "Mizuki"
+
+    try:
+        # Amazon Pollyを使用して音声を生成
+        response = polly_client.synthesize_speech(
+            Text=input.text,
+            OutputFormat='mp3',
+            VoiceId=voice,
+            LanguageCode='ja-JP'
+        )
+
+        audio_stream = response.get("AudioStream")
+        if not audio_stream:
+            raise HTTPException(
+                status_code=500, detail="音声の生成に失敗しました。"
+            )
+        return StreamingResponse(
+            audio_stream,
+            media_type="audio/mpeg",
+            headers={"Content-Disposition": "inline; filename=voice.mp3"}
+        )
+    except Exception as e:
+        print(f"音声生成に失敗しました: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"音声生成に失敗しました。{str(e)}"
         )

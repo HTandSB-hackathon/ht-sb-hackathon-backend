@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin")
     S3_REGION: str = os.getenv("S3_REGION", "us-east-1")
     STORAGE_BUCKET_NAME: str = os.getenv("STORAGE_BUCKET_NAME", "ht-sb-bucket")
+
+    # Amazon Polly設定
+    AWS_REGION: str = os.getenv("AWS_REGION", "ap-northeast-1")  # 東京リージョン
+    AWS_ACCESS_KEY_ID_POLLY: str = os.getenv("AWS_ACCESS_KEY_ID_POLLY")
+    AWS_SECRET_ACCESS_KEY_POLLY: str = os.getenv("AWS_SECRET_ACCESS_KEY_POLLY")
     
     # SQLAlchemy
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
