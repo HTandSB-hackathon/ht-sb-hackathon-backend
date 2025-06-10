@@ -1,6 +1,8 @@
 from typing import List
 
 from sqlalchemy.orm import Session
+from sqlalchemy.future import select
+from app.models.nfc import CharacterNfcUuid
 
 from app.models.character import Character, Story
 from app.models.relationship import Relationship
@@ -114,3 +116,19 @@ async def unlock_character_story(
         return None
         
     return StoryUnlockedResponse.from_orm(story)
+
+async def get_character_nfc_uuid_by_nfc_uuid_async(db: Session, *, nfc_uuid: str) -> CharacterNfcUuid | None:
+    """
+    指定したNFC UUIDに紐づくCharacterNfcUuid情報を非同期で取得
+    """
+    result = await db.execute(
+        select(CharacterNfcUuid).filter(CharacterNfcUuid.nfc_uuid == nfc_uuid)
+    )
+    return result.scalars().first()
+
+async def get_character_by_id_async(db: Session, *, id: int) -> Character | None:
+    """
+    指定したIDのキャラクター情報を非同期で取得 (model instance)
+    """
+    result = await db.execute(select(Character).filter(Character.id == id))
+    return result.scalars().first()
