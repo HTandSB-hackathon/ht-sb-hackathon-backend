@@ -197,7 +197,7 @@ def tasuki_voice_reader(
     character_id: int,
     polly_client = Depends(get_polly_client),
     db: Session = Depends(deps.get_db),
-    # current_user = Depends(deps.get_current_user)
+    current_user = Depends(deps.get_current_user)
 ) -> StreamingResponse:
 
     character = get_character_by_id(db, character_id)
