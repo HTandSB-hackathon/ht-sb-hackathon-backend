@@ -183,6 +183,16 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: MONGODB_DB_NAME
+        - name: AWS_ACCESS_KEY_ID_POLLY
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: AWS_ACCESS_KEY_ID_POLLY
+        - name: AWS_SECRET_ACCESS_KEY_POLLY
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: AWS_SECRET_ACCESS_KEY_POLLY
         ports:
         - containerPort: 8000
           name: http
