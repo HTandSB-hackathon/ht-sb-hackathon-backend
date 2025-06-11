@@ -6,13 +6,23 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.orm import Session
 
 from app.api import deps
+from app.core.aws.bedrock_client import BedrockClient
 from app.core.aws.polly_client import PollyClient
 from app.core.tasuki.tasuki_client import TasukiClient
 from app.crud.character import get_character_by_id
 from app.crud.redis import RedisCacheService
 from app.crud.relationship import update_relationship_total_point
-from app.crud.tasuki import TasukiService, get_all_chat_count, get_all_chat_count_by_character, get_chat_count, get_chat_history, save_chat_message
-from app.schemas.chat import ChatCount, ChatInput, ChatMessage, ChatOutput, VoiceReaderInput
+from app.crud.tasuki import (
+    ConversationAnalysisService,
+    PositiveAnalysisService,
+    TasukiService,
+    get_all_chat_count,
+    get_all_chat_count_by_character,
+    get_chat_count,
+    get_chat_history,
+    save_chat_message,
+)
+from app.schemas.chat import ChatCount, ChatInput, ChatMessage, ChatOutput, ConversationAnalysisChainInput, VoiceReaderInput
 
 router = APIRouter()
 
@@ -23,6 +33,15 @@ def get_tasuki_client():
     except ValueError:
         raise HTTPException(
             status_code=500, detail="Failed to initialize LLM client. Please check API key configuration."
+        )
+
+def get_bedrock_client() -> BedrockClient:
+    """Amazon Bedrockクライアントを取得"""
+    try:
+        return BedrockClient()
+    except ValueError:
+        raise HTTPException(
+            status_code=500, detail="Failed to initialize Amazon Bedrock client. Please check AWS credentials."
         )
 
 def get_tasuki_service(project_id: str, character, tasuki_client: TasukiClient = Depends(get_tasuki_client)) -> Any:
@@ -53,6 +72,35 @@ def get_polly_client():
             status_code=500, detail="Failed to initialize Amazon Polly client. Please check AWS credentials."
         )
 
+def get_bedrock_service(
+    bedrock_client: BedrockClient = Depends(get_bedrock_client)
+):
+    """Amazon Bedrockサービスを取得"""
+    try:
+        return PositiveAnalysisService(
+            bedrock_client=bedrock_client,
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=500, detail="Failed to initialize Amazon Bedrock service. Please check AWS credentials."
+        )
+
+
+def get_conversation_analysis_service(
+    tasuki_client: TasukiClient = Depends(get_tasuki_client)
+) -> Any:
+    """会話分析チェーンを取得"""
+    try:
+        conversation_analysis_service = ConversationAnalysisService(
+            tasuki_client=tasuki_client,
+            project_id="010d6606-c5f8-485c-8acb-278efd65b2c2",
+        )
+
+        return conversation_analysis_service
+    except ValueError:
+        raise HTTPException(
+            status_code=500, detail="Failed to initialize conversation analysis service. Please check API key configuration."
+        )
 
 @router.get("/chat/{character_id}", tags=["tasuki"], response_model=List[ChatMessage])
 async def tasuki_chat_history(
@@ -243,3 +291,46 @@ def tasuki_voice_reader(
         raise HTTPException(
             status_code=500, detail=f"音声生成に失敗しました。{str(e)}"
         )
+    
+@router.get("/chat/conversation_analysis/{character_id}", tags=["tasuki"])
+async def tasuki_conversation_analysis(
+    character_id: int,
+    bedrock_service: PositiveAnalysisService = Depends(get_bedrock_service),
+    conversation_analysis: ConversationAnalysisService = Depends(get_conversation_analysis_service),
+    db: Session = Depends(deps.get_db),
+    mongodb: AsyncIOMotorDatabase = Depends(deps.get_mongo_db),
+    current_user = Depends(deps.get_current_user),
+) -> Any:
+    """
+    会話分析を実行するエンドポイント
+    """
+
+    inputs = ConversationAnalysisChainInput(
+        user_id=current_user.id,
+        character_id=character_id
+    )
+
+    try:
+        conversation_analysis_result = await conversation_analysis.check(
+            inputs=inputs, 
+            db=db,
+            mongodb=mongodb
+        )
+
+        positive = await bedrock_service.check(
+            inputs=inputs,
+            db=db,
+            mongodb=mongodb
+        )
+
+        return {
+            "conversation_analysis": conversation_analysis_result,
+            "positive_analysis": positive
+        }
+        
+    except Exception as e:
+        print(f"会話分析に失敗しました: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"会話分析に失敗しました。{str(e)}"
+        )
+    

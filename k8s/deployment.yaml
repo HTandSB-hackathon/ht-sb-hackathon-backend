@@ -193,6 +193,16 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: AWS_SECRET_ACCESS_KEY_POLLY
+        - name: AWS_ACCESS_KEY_ID_BEDROCK
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: AWS_ACCESS_KEY_ID_BEDROCK
+        - name: AWS_SECRET_ACCESS_KEY_BEDROCK
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: AWS_SECRET_ACCESS_KEY_BEDROCK
         ports:
         - containerPort: 8000
           name: http
