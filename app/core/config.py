@@ -53,6 +53,11 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID_POLLY: str = os.getenv("AWS_ACCESS_KEY_ID_POLLY")
     AWS_SECRET_ACCESS_KEY_POLLY: str = os.getenv("AWS_SECRET_ACCESS_KEY_POLLY")
     
+    # Amazon Bedrock設定
+    AWS_BEDROCK_MODEL_ID: str = os.getenv("AWS_BEDROCK_MODEL_ID", "apac.amazon.nova-pro-v1:0")
+    AWS_ACCESS_KEY_ID_BEDROCK: str = os.getenv("AWS_ACCESS_KEY_ID_BEDROCK")
+    AWS_SECRET_ACCESS_KEY_BEDROCK: str = os.getenv("AWS_SECRET_ACCESS_KEY_BEDROCK")
+
     # SQLAlchemy
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
 
