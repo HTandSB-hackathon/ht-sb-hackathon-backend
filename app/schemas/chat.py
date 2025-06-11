@@ -45,3 +45,9 @@ class VoiceReaderInput(BaseModel):
     """Input schema for voice chat"""
 
     text: str = Field(..., description="Text to be converted to speech")
+
+class ConversationAnalysisChainInput(BaseModel):
+    """Input schema for conversation analysis chain"""
+
+    user_id: int = Field(..., description="User ID")
+    character_id: int = Field(..., description="Character ID")

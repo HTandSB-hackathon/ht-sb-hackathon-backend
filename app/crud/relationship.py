@@ -1,4 +1,4 @@
-
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
@@ -73,7 +73,8 @@ def insert_relationship(
         total_points=0,    # 初期ポイントは0
         conversation_count=0,  # 初期会話数は0
         next_level_points=next_level_points,  # 次のレベルに必要なポイント
-        first_met_at=None,  # 初対面日時はNone（後で設定可能）
+        first_met_at=datetime.utcnow(),
+        updated_date=datetime.utcnow(),  # 更新日時は現在日時
         is_favorite=False   # 初期状態ではお気に入りではない
     )
 

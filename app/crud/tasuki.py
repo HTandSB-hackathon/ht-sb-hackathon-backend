@@ -3,8 +3,10 @@ from datetime import datetime
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from sqlalchemy.orm import Session
 
-from app.core.llm.chain.chatchain import ChatChain
+from app.core.aws.bedrock_client import BedrockClient
+from app.core.llm.chain.chatchain import ChatChain, ConversationAnalysisChain, PositiveAnalysisChain
 from app.core.tasuki.tasuki_client import TasukiClient
 from app.schemas.chat import ChatCount, ChatMessage, ChatOutput
 from app.schemas.tasuki import TasukiAuthCheckOutput
@@ -59,6 +61,65 @@ class TasukiService:
                 chunks=[]
             )
         
+class ConversationAnalysisService:
+    def __init__(self, 
+            tasuki_client: TasukiClient,
+            project_id: str,
+        ):
+        self.tasuki_client = tasuki_client
+        self._setup_chain(project_id)
+
+    def _setup_chain(self, 
+            project_id: str,
+        ) -> None:
+        """
+        TASUKIプロジェクト用のチャットクライアントをセットアップ
+        """
+        if not project_id:
+            raise ValueError("プロジェクトIDが指定されていません。")
+        chat_llm = self.tasuki_client.get_chat_model(project_id)
+        self.chain = ConversationAnalysisChain(
+            chat_llm=chat_llm,
+        ) 
+    
+    async def check(self, inputs, db: Session, mongodb: AsyncIOMotorDatabase) -> Any:
+        """
+        TASUKIプロジェクトで語句分析を実行するメソッド
+        """
+        try:
+            result = await self.chain.invoke(inputs, db=db, mongodb=mongodb)
+            return result
+        except Exception as e:
+            logger.error(f"TASUKIチャットに失敗しました: {e}")
+            raise 
+
+class PositiveAnalysisService:
+    def __init__(self, 
+            bedrock_client: BedrockClient,
+        ):
+        self.bedrock_client = bedrock_client
+        self._setup_chain()
+
+    def _setup_chain(self, 
+        ) -> None:
+        """
+        Bedrockをセットアップ
+        """
+        chat_llm = self.bedrock_client.get_client()
+        self.chain = PositiveAnalysisChain(
+            chat_llm=chat_llm,
+        )
+
+    async def check(self, inputs, db: Session, mongodb: AsyncIOMotorDatabase):
+        """
+        Bedrockでポジティブ分析を実行するメソッド
+        """
+        try:
+            result = await self.chain.invoke(inputs, db=db, mongodb=mongodb)
+            return result
+        except Exception as e:
+            logger.error(f"TASUKIチャットに失敗しました: {e}")
+            raise 
 
 async def get_chat_history(mongodb: AsyncIOMotorDatabase, user_id: str, character_id: str):
     """
