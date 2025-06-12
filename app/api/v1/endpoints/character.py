@@ -215,25 +215,28 @@ async def check_trust_level(
     # キャラクターの全てのレベル閾値を信頼度IDの降順で取得
     all_thresholds = db.query(LevelThresholdModel).filter(
         LevelThresholdModel.character_id == character_id
-    ).order_by(LevelThresholdModel.trust_level_id.asc()).all()
+    ).order_by(LevelThresholdModel.trust_level_id.desc()).all()
 
     target_trust_level_id = current_trust_level_id # 更新がない場合のデフォルト
     target_next_level_points = db_relationship.next_level_points # 更新がない場合のデフォルト
 
-    conditions_met = False
-    for threshold in all_thresholds:
+    for i, threshold in enumerate(all_thresholds):
+        conditions_met = True
         # この閾値レベルが現在のレベル以下なら、それ以上高いレベルにはなれないのでチェック終了
+
+        print("レベル:", threshold.trust_level_id, "現状のポイント:", total_points, "必要なポイント:", threshold.required_points, total_points < threshold.required_points)
+        if threshold.required_points is not None and total_points < threshold.required_points:
+            conditions_met = False
+
+        print("条件を満たすか:", conditions_met, i)
 
         if conditions_met:
             # 条件を満たす最も高いレベルが見つかった場合ループを抜ける
             print(f"条件を満たすレベルが見つかりました: {threshold.trust_level_id}, 必要ポイント: {threshold.required_points}")
-            target_trust_level_id = threshold.trust_level_id
-            target_next_level_points = threshold.required_points
+            print(f"ネクストレベルポイント: {all_thresholds[i-1].required_points} ネクストレベル：{all_thresholds[i-1].trust_level_id if i > 0 else 'なし'}")
+            target_trust_level_id = all_thresholds[i-1].trust_level_id if i > 0 else all_thresholds[0].trust_level_id
+            target_next_level_points = all_thresholds[i-1].required_points if i > 0 else all_thresholds[0].required_points
             break
-
-        print(total_points, threshold.required_points, total_points < threshold.required_points)
-        if threshold.required_points is not None and total_points >= threshold.required_points:
-            conditions_met = True
             
         # if threshold.required_conversations is not None and conversation_count < threshold.required_conversations:
         #     conditions_met = False
@@ -253,6 +256,8 @@ async def check_trust_level(
             # level_thresholdsにはtrust_levelからレベルアップするための条件が含まれているため更新する値は+1を指定
             db, user_id=current_user_id, character_id=character_id, new_trust_level_id=target_trust_level_id, next_level_points=target_next_level_points
         )
+
+        print(f"信頼レベルアップ: {current_trust_level_id} -> {target_trust_level_id}, 次のレベルポイント: {target_next_level_points}")
 
         try: 
 
